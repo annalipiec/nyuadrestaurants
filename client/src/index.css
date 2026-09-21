@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  /* NYU Abu Dhabi purple, plus supporting tints/shades used across the UI */
+  --color-nyuad-950: #2c0347;
+  --color-nyuad-900: #3d0464;
+  --color-nyuad-800: #4a0578;
+  --color-nyuad-700: #57068c;
+  --color-nyuad-600: #6c1aa3;
+  --color-nyuad-500: #8536ba;
+  --color-nyuad-400: #a566cf;
+  --color-nyuad-300: #c79ce0;
+  --color-nyuad-200: #e0c8ef;
+  --color-nyuad-100: #f0e3f7;
+  --color-nyuad-50: #f8f2fb;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-nyuad-50 text-nyuad-950 antialiased;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-nyuad-300);
+  border-radius: 9999px;
+}
