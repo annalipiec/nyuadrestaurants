@@ -12,6 +12,9 @@ well for this specific audience:
 3. **Open, low-barrier community input** — star ratings *and* NYUAD-specific "vibe tags" (e.g. "Would
    shuttle back for this", "Group dinner, split the bill"), plus per-dish likes, all gated only by an
    `@nyu.edu` login (no submission quotas like Beli).
+4. **Verified-student content** — posting a review, dish, or restaurant requires confirming your
+   `@nyu.edu` inbox with a 6-digit code, not just typing an `@nyu.edu`-shaped email, so reviews stay
+   trustworthy. Browsing, liking dishes, and signing in don't require verification.
 
 ## Tech stack
 
@@ -46,8 +49,11 @@ npm run dev        # http://localhost:4000
 cd ../client && npm run dev   # http://localhost:5173, proxies /api to :4000
 ```
 
-Open http://localhost:5173. Sign up with any `@nyu.edu`-style email (the domain check is real, but
-no verification email is sent yet — see "What's stubbed out" below).
+Open http://localhost:5173. Sign up with any `@nyu.edu`-style email. No real email provider is wired
+up yet, so after signup you'll land on `/verify-email` with your 6-digit verification code shown
+directly on the page (also logged by the server as `[DEV] Verification code for ...`) — enter it to
+unlock posting reviews, dishes, and restaurants. See "What's stubbed out" below for swapping this for
+real email delivery.
 
 To reseed from scratch, stop the server and delete `server/data/nyuad-eats.db*`, then run
 `npm run seed` again.
@@ -58,9 +64,13 @@ To reseed from scratch, stop the server and delete `server/data/nyuad-eats.db*`,
   shuttle-route overlay toggle.
 - **Restaurant detail page** — price tag, star average, dishes with a like button, and reviews (star
   rating + optional NYUAD vibe tag + free text).
-- **Add a spot** (`/add-restaurant`, requires login) — community submission form with a click-to-pin
-  map; new restaurants are marked **unverified** until the community reviews them.
+- **Add a spot** (`/add-restaurant`, requires a verified account) — community submission form with a
+  click-to-pin map; new restaurants are marked **unverified** until the community reviews them.
 - **Auth** (`/login`, `/signup`) — email/password, signup restricted to `@nyu.edu` addresses.
+- **Email verification** (`/verify-email`) — a 6-digit code gate between signing up and posting
+  content. Unverified accounts can browse and like dishes, but get a "verify your email" prompt (with
+  a link straight to `/verify-email`) in place of the add-dish/review/add-restaurant forms, plus a
+  site-wide reminder banner until they verify.
 
 ## Important: about the seed data
 
@@ -75,8 +85,11 @@ and your friends. Before treating this as a real launch:
 
 ## What's stubbed out / next steps
 
-- **Email verification**: signup checks the `@nyu.edu` domain but doesn't send a confirmation email —
-  wire up an email provider (e.g. SendGrid/Postmark) if you want to confirm real inboxes.
+- **Real email delivery**: verification codes are generated and gate posting correctly, but they're
+  returned in the API response / logged to the server console instead of actually emailed (see
+  `issueDevVerificationCode` in `server/src/routes/auth.js`). To send real email, swap that function
+  for a call to a provider (e.g. Resend, SendGrid, Postmark) and stop returning `dev_verification_code`
+  in the signup/resend API responses.
 - **Photos**: the schema/UI don't yet support photo uploads for reviews or dishes; adding this would
   need an object storage provider (e.g. S3-compatible) since this is a single-server demo.
 - **"Verify" workflow**: restaurants submitted via "Add a spot" start `unverified`; there's no admin/
@@ -90,19 +103,22 @@ and your friends. Before treating this as a real launch:
 ## API overview
 
 All endpoints are under `/api`. Auth uses `Authorization: Bearer <token>` from `/api/auth/login` or
-`/api/auth/signup`.
+`/api/auth/signup`. "verified" in the Auth column means `requireAuth` *and* a verified email
+(`requireVerified`); "required" means `requireAuth` only.
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/auth/signup` | – | Create account (`@nyu.edu` only) |
+| POST | `/auth/signup` | – | Create account (`@nyu.edu` only); returns `dev_verification_code` |
 | POST | `/auth/login` | – | Log in |
-| GET | `/auth/me` | required | Current user |
+| GET | `/auth/me` | required | Current user (includes `email_verified`) |
+| POST | `/auth/verify` | required | Confirm the 6-digit code to set `email_verified = true` |
+| POST | `/auth/resend-verification` | required | Issue a new code (unverified accounts only) |
 | GET | `/restaurants` | – | List/filter restaurants (`q`, `cuisine`, `maxPrice`, `happyHour`) |
 | GET | `/restaurants/cuisines` | – | Distinct cuisine list for the filter dropdown |
 | GET | `/restaurants/:id` | – | Restaurant detail + reviews |
-| POST | `/restaurants` | required | Submit a new restaurant (starts unverified) |
-| POST | `/restaurants/:id/dishes` | required | Add a dish |
+| POST | `/restaurants` | verified | Submit a new restaurant (starts unverified) |
+| POST | `/restaurants/:id/dishes` | verified | Add a dish |
 | POST | `/dishes/:id/like` | required | Toggle a like on a dish |
-| POST | `/restaurants/:id/reviews` | required | Post a review (stars + optional vibe tag + text) |
+| POST | `/restaurants/:id/reviews` | verified | Post a review (stars + optional vibe tag + text) |
 | GET | `/phrases` | – | List of NYUAD vibe tags for the review form |
 | GET | `/shuttles` | – | Shuttle routes (with path coordinates) + stops |

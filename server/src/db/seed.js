@@ -16,7 +16,7 @@ if (already > 0) {
 }
 
 const insertUser = db.prepare(
-  `INSERT INTO users (email, name, password_hash, class_year) VALUES (?, ?, ?, ?)`
+  `INSERT INTO users (email, name, password_hash, class_year, email_verified) VALUES (?, ?, ?, ?, 1)`
 );
 const demoPasswordHash = bcrypt.hashSync('nyuadeats-demo', 10);
 const seedUserId = insertUser.run('eats-team@nyu.edu', 'NYUAD Eats Team', demoPasswordHash, 2026).lastInsertRowid;

@@ -19,8 +19,8 @@ export default function SignupPage() {
     setBusy(true);
     setError('');
     try {
-      await signup({ ...form, class_year: form.class_year ? Number(form.class_year) : null });
-      navigate('/', { replace: true });
+      const data = await signup({ ...form, class_year: form.class_year ? Number(form.class_year) : null });
+      navigate('/verify-email', { replace: true, state: { devCode: data.dev_verification_code } });
     } catch (err) {
       setError(apiErrorMessage(err, 'Could not create account.'));
     } finally {

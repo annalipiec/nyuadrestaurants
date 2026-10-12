@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import db from '../db/index.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireVerified } from '../middleware/auth.js';
 
 const router = Router();
 
-router.post('/restaurants/:restaurantId/dishes', requireAuth, (req, res) => {
+router.post('/restaurants/:restaurantId/dishes', requireAuth, requireVerified, (req, res) => {
   const restaurant = db.prepare('SELECT id FROM restaurants WHERE id = ?').get(req.params.restaurantId);
   if (!restaurant) return res.status(404).json({ error: 'Restaurant not found.' });
 

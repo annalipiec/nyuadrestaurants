@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import db from '../db/index.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireVerified } from '../middleware/auth.js';
 import { NYUAD_PHRASES } from '../constants.js';
 
 const router = Router();
@@ -9,7 +9,7 @@ router.get('/phrases', (_req, res) => {
   res.json({ phrases: NYUAD_PHRASES });
 });
 
-router.post('/restaurants/:restaurantId/reviews', requireAuth, (req, res) => {
+router.post('/restaurants/:restaurantId/reviews', requireAuth, requireVerified, (req, res) => {
   const restaurant = db.prepare('SELECT id FROM restaurants WHERE id = ?').get(req.params.restaurantId);
   if (!restaurant) return res.status(404).json({ error: 'Restaurant not found.' });
 

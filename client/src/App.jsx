@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import RestaurantDetailPage from './pages/RestaurantDetailPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import AddRestaurantPage from './pages/AddRestaurantPage';
 
 export default function App() {
@@ -17,10 +18,11 @@ export default function App() {
           <Route path="/restaurants/:id" element={<RestaurantDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route
             path="/add-restaurant"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireVerified>
                 <AddRestaurantPage />
               </ProtectedRoute>
             }

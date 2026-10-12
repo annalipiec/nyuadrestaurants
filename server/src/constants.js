@@ -12,6 +12,14 @@ export function priceTierFor(avgMealPriceAed) {
   return { key: 'splurge', label: 'Senior-year splurge', symbol: '$$$' };
 }
 
+export const VERIFICATION_CODE_LENGTH = 6;
+export const VERIFICATION_EXPIRY_MINUTES = 15;
+
+export function generateVerificationCode() {
+  const max = 10 ** VERIFICATION_CODE_LENGTH;
+  return String(Math.floor(Math.random() * max)).padStart(VERIFICATION_CODE_LENGTH, '0');
+}
+
 // Optional "vibe" tag a reviewer can attach alongside their star rating.
 export const NYUAD_PHRASES = [
   'Would shuttle back for this',

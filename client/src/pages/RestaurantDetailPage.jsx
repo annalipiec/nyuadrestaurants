@@ -249,8 +249,15 @@ export default function RestaurantDetailPage() {
             <p className="text-sm text-nyuad-500">No dishes added yet.</p>
           )}
         </ul>
-        {user ? (
+        {user && user.email_verified ? (
           <AddDishForm restaurantId={restaurant.id} onAdded={handleDishAdded} />
+        ) : user ? (
+          <p className="mt-3 text-sm text-nyuad-500">
+            <Link to="/verify-email" className="text-nyuad-700 underline">
+              Verify your email
+            </Link>{' '}
+            to add a dish. You can still like existing ones.
+          </p>
         ) : (
           <p className="mt-3 text-sm text-nyuad-500">
             <Link to="/login" className="text-nyuad-700 underline">
@@ -265,8 +272,15 @@ export default function RestaurantDetailPage() {
         <h2 className="text-lg font-semibold text-nyuad-950">Reviews</h2>
 
         <div className="mt-3">
-          {user ? (
+          {user && user.email_verified ? (
             <ReviewForm restaurantId={restaurant.id} phrases={phrases} onAdded={handleReviewAdded} />
+          ) : user ? (
+            <p className="rounded-xl border border-dashed border-nyuad-200 p-4 text-sm text-nyuad-500">
+              <Link to="/verify-email" className="text-nyuad-700 underline">
+                Verify your email
+              </Link>{' '}
+              to leave a review.
+            </p>
           ) : (
             <p className="rounded-xl border border-dashed border-nyuad-200 p-4 text-sm text-nyuad-500">
               <Link to="/login" className="text-nyuad-700 underline">

@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const linkClass = ({ isActive }) =>
@@ -8,6 +8,7 @@ const linkClass = ({ isActive }) =>
 
 export default function NavBar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="sticky top-0 z-[1000] border-b border-nyuad-100 bg-white/90 backdrop-blur">
@@ -43,6 +44,16 @@ export default function NavBar() {
           )}
         </nav>
       </div>
+
+      {user && !user.email_verified && location.pathname !== '/verify-email' && (
+        <div className="bg-amber-50 px-4 py-2 text-center text-sm text-amber-800">
+          Verify your @nyu.edu email to post reviews and add restaurants —{' '}
+          <Link to="/verify-email" className="font-medium underline">
+            verify now
+          </Link>
+          .
+        </div>
+      )}
     </header>
   );
 }

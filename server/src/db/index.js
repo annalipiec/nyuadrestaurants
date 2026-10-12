@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   class_year INTEGER,
+  email_verified INTEGER NOT NULL DEFAULT 0,
+  verification_code TEXT,
+  verification_expires_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -89,5 +92,15 @@ CREATE TABLE IF NOT EXISTS shuttle_stops (
   FOREIGN KEY (route_id) REFERENCES shuttle_routes(id) ON DELETE SET NULL
 );
 `);
+
+// Migration for databases created before email verification was added.
+const userColumns = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
+if (!userColumns.includes('email_verified')) {
+  db.exec(`
+    ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE users ADD COLUMN verification_code TEXT;
+    ALTER TABLE users ADD COLUMN verification_expires_at TEXT;
+  `);
+}
 
 export default db;

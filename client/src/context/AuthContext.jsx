@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
   async function signup(payload) {
     const { data } = await api.post('/auth/signup', payload);
     saveSession(data.token, data.user);
-    return data.user;
+    return data;
   }
 
   async function login(payload) {
@@ -43,8 +43,19 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  async function verifyEmail(code) {
+    const { data } = await api.post('/auth/verify', { code });
+    setUser(data.user);
+    return data.user;
+  }
+
+  async function resendVerification() {
+    const { data } = await api.post('/auth/resend-verification');
+    return data.dev_verification_code;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, signup, login, logout, verifyEmail, resendVerification }}>
       {children}
     </AuthContext.Provider>
   );

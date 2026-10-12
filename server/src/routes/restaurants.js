@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import db from '../db/index.js';
-import { requireAuth, optionalAuth } from '../middleware/auth.js';
+import { requireAuth, requireVerified, optionalAuth } from '../middleware/auth.js';
 import { priceTierFor } from '../constants.js';
 import { nearestStop } from '../utils/geo.js';
 
@@ -92,7 +92,7 @@ router.get('/:id', (req, res) => {
   res.json({ restaurant: decorateRestaurant(r), reviews });
 });
 
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, requireVerified, (req, res) => {
   const { name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info } =
     req.body || {};
 
