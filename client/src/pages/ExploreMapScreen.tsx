@@ -30,9 +30,16 @@ export default function ExploreMapScreen() {
     <div className="explore-screen">
       <div className="explore-screen__map">
         <MapContainer center={NYUAD_CENTER} zoom={12}>
+          {/*
+            CARTO's free basemaps, not raw tile.openstreetmap.org — the latter
+            actively blocks shared/automated traffic (exactly what a Codespace
+            or CI box looks like to it) per OSM's tile usage policy
+            (osm.wiki/Blocked). CARTO's tiles are explicitly meant for
+            third-party apps and still carry OSM attribution/data underneath.
+          */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           />
           {restaurants.map((r) => (
             <Marker
