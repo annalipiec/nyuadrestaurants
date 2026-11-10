@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import './ExploreMapScreen.css'
 import { listRestaurants } from '../api/restaurants'
@@ -11,6 +11,7 @@ const NYUAD_CENTER: [number, number] = [24.5335, 54.438]
 
 export default function ExploreMapScreen() {
   const { user, logout } = useAuth()
+  const location = useLocation()
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
@@ -59,7 +60,11 @@ export default function ExploreMapScreen() {
                   <p className="map-popup__meta">
                     {r.cuisine} · {r.price_tier.symbol}
                   </p>
-                  <Link to={`/restaurants/${r.id}`} className="map-popup__link">
+                  <Link
+                    to={`/restaurants/${r.id}`}
+                    state={{ backgroundLocation: location }}
+                    className="map-popup__link"
+                  >
                     View details
                   </Link>
                 </div>
@@ -106,6 +111,7 @@ export default function ExploreMapScreen() {
           <Link
             key={r.id}
             to={`/restaurants/${r.id}`}
+            state={{ backgroundLocation: location }}
             className={`restaurant-row${r.id === activeId ? ' restaurant-row--active' : ''}`}
             onMouseEnter={() => setActiveId(r.id)}
             onMouseLeave={() => setActiveId(null)}

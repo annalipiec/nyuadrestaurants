@@ -7,6 +7,38 @@
   overflow: hidden;
 }
 
+/* "Map stays visible" mode (see App.tsx / DetailOverlay): rendered as a
+   bottom sheet on top of the real map instead of a full standalone page, so
+   it's height-constrained and scrolls internally instead of using page
+   scroll, and skips the illustrated map header entirely (the real map
+   behind it already shows where the restaurant is). */
+.detail-screen--embedded {
+  width: 100%;
+  min-height: 0;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+  animation: detail-sheet-slide-up 0.2s ease-out;
+}
+
+@keyframes detail-sheet-slide-up {
+  from {
+    transform: translateY(28px);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.detail-screen__embedded-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
 /* ---- Header / map area ---- */
 
 .detail-screen__header {
@@ -66,6 +98,11 @@
   border-top-right-radius: 28px;
   background-color: var(--color-surface);
   padding: 0.75rem 1.25rem 2rem;
+}
+
+.detail-screen--embedded .detail-screen__sheet {
+  margin-top: 0;
+  border-radius: 0;
 }
 
 .detail-screen__handle {

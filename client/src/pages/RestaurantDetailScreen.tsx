@@ -116,7 +116,7 @@ function AddTipForm({
   )
 }
 
-export default function RestaurantDetailScreen() {
+export default function RestaurantDetailScreen({ embedded = false }: { embedded?: boolean }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -167,30 +167,50 @@ export default function RestaurantDetailScreen() {
     setShowTipForm(false)
   }
 
-  if (loading) return <p className="detail-screen__state">Loading restaurant…</p>
+  if (loading) {
+    return (
+      <div className={embedded ? 'detail-screen detail-screen--embedded' : undefined}>
+        <p className="detail-screen__state">Loading restaurant…</p>
+      </div>
+    )
+  }
   if (notFound || !restaurant) {
     return (
-      <p className="detail-screen__state">
-        Couldn't find that restaurant. <Link to="/">Back to the map</Link>
-      </p>
+      <div className={embedded ? 'detail-screen detail-screen--embedded' : undefined}>
+        <p className="detail-screen__state">
+          Couldn't find that restaurant. <Link to="/">Back to the map</Link>
+        </p>
+      </div>
     )
   }
 
   return (
-    <div className="detail-screen">
-      <header className="detail-screen__header">
-        <MapHeaderGraphic />
-        <div className="detail-screen__header-bar">
-          <button type="button" className="icon-button" aria-label="Go back" onClick={() => navigate(-1)}>
-            <ChevronLeftIcon />
-          </button>
-          <button type="button" className="icon-button" aria-label="Share this restaurant" onClick={handleShare}>
-            <ShareIcon />
-          </button>
-        </div>
-      </header>
+    <div className={`detail-screen${embedded ? ' detail-screen--embedded' : ''}`}>
+      {!embedded && (
+        <header className="detail-screen__header">
+          <MapHeaderGraphic />
+          <div className="detail-screen__header-bar">
+            <button type="button" className="icon-button" aria-label="Go back" onClick={() => navigate(-1)}>
+              <ChevronLeftIcon />
+            </button>
+            <button type="button" className="icon-button" aria-label="Share this restaurant" onClick={handleShare}>
+              <ShareIcon />
+            </button>
+          </div>
+        </header>
+      )}
 
       <div className="detail-screen__sheet">
+        {embedded && (
+          <div className="detail-screen__embedded-controls">
+            <button type="button" className="icon-button" aria-label="Close" onClick={() => navigate(-1)}>
+              <ChevronLeftIcon />
+            </button>
+            <button type="button" className="icon-button" aria-label="Share this restaurant" onClick={handleShare}>
+              <ShareIcon />
+            </button>
+          </div>
+        )}
         <div className="detail-screen__handle" aria-hidden="true" />
 
         <div className="detail-screen__title-row">

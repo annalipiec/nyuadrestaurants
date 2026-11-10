@@ -28,6 +28,14 @@
    */
   --color-on-accent: #ffffff;
 
+  /*
+   * Backdrop dimming behind a modal/overlay (e.g. the map-stays-visible
+   * restaurant detail sheet). Like --color-on-accent, intentionally
+   * constant across themes — a scrim dims whatever's behind it the same
+   * way regardless of light/dark, it's not "foreground content".
+   */
+  --color-scrim: rgba(26, 2, 42, 0.45);
+
   /* ---- Type ---- */
   --font-sans: 'Figtree Variable', 'Figtree', system-ui, sans-serif;
   --font-weight-min: 400;

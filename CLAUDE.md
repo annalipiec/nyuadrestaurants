@@ -43,13 +43,38 @@ server/   Express + SQLite API from an earlier iteration of this project
 - `/` — `ExploreMapScreen`: real Leaflet map + searchable list of restaurants from the API, the app's
   home screen.
 - `/restaurants/:id` — `RestaurantDetailScreen`: real restaurant data, dish likes, reviews ("tips").
-  Its header is a **decorative illustrated map** (`MapHeaderGraphic`, hand-drawn SVG), not a real map —
-  don't confuse it with the real Leaflet map on `/`. The back button does `navigate(-1)`, not a fixed
-  route, so it returns wherever the user came from.
+  The back button does `navigate(-1)`, not a fixed route, so it returns wherever the user came from.
+  Renders in one of two visual modes (see "Map-stays-visible overlay" below) — don't assume it always
+  has the illustrated header.
 - `/login`, `/signup`, `/verify-email` — auth screens, styled to match (`AuthScreens.css`), gate the
   write actions (reviews, dishes, new restaurants need a verified email; dish likes just need login).
 - No "Saved" or "Profile" screens/bottom-nav exist — out of scope so far. If adding them, match the
   nav bar shown in the uploaded mockup (`restaurant-detail.png`).
+
+### Map-stays-visible overlay
+
+Opening a restaurant from `ExploreMapScreen` (map pin or list row) does **not** navigate away from the
+map — `RestaurantDetailScreen` instead slides up as a bottom sheet on top of it, dimmed backdrop
+behind, map still fully mounted and interactive-state-preserved underneath (zoom/pan/search query
+survive opening and closing the sheet). This is react-router's standard "background location" modal
+pattern, implemented in `App.tsx`:
+
+- Every `<Link>` that opens a restaurant from the Explore screen passes
+  `state={{ backgroundLocation: location }}` (see `ExploreMapScreen.tsx`).
+- `App.tsx` renders the main `<Routes>` using that `backgroundLocation` when present (so it keeps
+  showing `/` — the map — instead of switching to the restaurant route), then renders a **second**
+  `<Routes>` for just the restaurant route, wrapped in `DetailOverlay` (fixed backdrop + dismiss-on-
+  backdrop-click), on top of it.
+- `RestaurantDetailScreen` takes an `embedded` prop for this: `embedded` skips the illustrated
+  `MapHeaderGraphic` header entirely (the real map behind it already shows the location) and shows a
+  lightweight close/share control row at the top of the sheet instead; the sheet becomes
+  height-constrained (`max-height: 88vh`) and scrolls internally rather than using page scroll.
+- **A direct visit to `/restaurants/:id`** (a shared link, a page refresh while on that route) has no
+  `backgroundLocation` in its router state, so it falls through to a plain, non-embedded, full-page
+  render — the original illustrated-header standalone screen. This is intentional: there's no map
+  mounted to show as a backdrop in that case.
+- If you add a new place that links to a restaurant, remember to pass `backgroundLocation` the same
+  way, or it'll fall back to the full-page (non-overlay) render instead of the sheet-over-map one.
 
 ## Design tokens
 
