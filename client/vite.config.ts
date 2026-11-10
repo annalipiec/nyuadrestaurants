@@ -4,6 +4,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      // server/ (Express API) must be running separately on :4000 — see CLAUDE.md.
+      '/api': 'http://localhost:4000',
+    },
+  },
   plugins: [
     react(),
     VitePWA({

@@ -14,9 +14,42 @@ client/   Vite + React + TypeScript PWA (the active frontend)
 server/   Express + SQLite API from an earlier iteration of this project
 ```
 
-`client/` was rebuilt from scratch as a TypeScript PWA; `server/` predates that rebuild and has not
-been re-integrated with it yet. Don't assume the two are wired together until a session explicitly
-connects them (API base URL, CORS, etc.).
+`client/` was rebuilt from scratch as a TypeScript PWA, then wired up to `server/`'s API (see
+"Backend integration" below). Both must be running for the app to work in dev — `server/` on `:4000`,
+`client/` via `vite dev` (proxies `/api` to `:4000`).
+
+## Backend integration
+
+- `client/vite.config.ts` proxies `/api` → `http://localhost:4000` in dev. In production this proxy
+  doesn't exist — whatever hosts the built client needs to either serve the API from the same origin
+  or this needs a real API base URL / CORS setup. Not solved yet.
+- `client/src/api/` is the typed API layer: `client.ts` (axios instance + JWT token storage in
+  `localStorage`, key `nyuad_eats_token`), `types.ts` (mirrors server response shapes — keep in sync
+  with `server/src/routes/*.js`), `restaurants.ts`, `auth.ts`, `shuttles.ts`.
+- Auth: `src/context/AuthContext.tsx` holds the current `User` and exposes `signup`/`login`/`logout`/
+  `verifyEmail`/`resendVerification`. Mirrors the server's nyu.edu-only signup + dev-mode email
+  verification (code shown on screen, not actually emailed — see `server`'s own CLAUDE-equivalent
+  notes / `issueDevVerificationCode` in `server/src/routes/auth.js`).
+- **Known gap**: liking a dish calls `POST /api/dishes/:id/like`, but `GET /api/restaurants/:id`
+  doesn't return whether *this* user already liked each dish — so the heart always starts unfilled
+  client-side, even if you'd liked it in a previous session. Fix requires a server change (join against
+  `dish_likes` for the current user) if this needs to be accurate.
+- "Saved" (the bookmark button on the detail screen) is **local component state only** — there is no
+  backend endpoint for it. Don't assume it persists across reloads or devices.
+
+## Routing
+
+`react-router-dom`, `BrowserRouter` set up in `main.tsx`. Routes (`App.tsx`):
+- `/` — `ExploreMapScreen`: real Leaflet map + searchable list of restaurants from the API, the app's
+  home screen.
+- `/restaurants/:id` — `RestaurantDetailScreen`: real restaurant data, dish likes, reviews ("tips").
+  Its header is a **decorative illustrated map** (`MapHeaderGraphic`, hand-drawn SVG), not a real map —
+  don't confuse it with the real Leaflet map on `/`. The back button does `navigate(-1)`, not a fixed
+  route, so it returns wherever the user came from.
+- `/login`, `/signup`, `/verify-email` — auth screens, styled to match (`AuthScreens.css`), gate the
+  write actions (reviews, dishes, new restaurants need a verified email; dish likes just need login).
+- No "Saved" or "Profile" screens/bottom-nav exist — out of scope so far. If adding them, match the
+  nav bar shown in the uploaded mockup (`restaurant-detail.png`).
 
 ## Design tokens
 
@@ -55,8 +88,14 @@ screen, confirm real dark-mode map land/water colors** and update both `tokens.c
     light, light lavender on dark) to stay legible against `--color-surface`/`--color-card`.
   - Using `--color-accent-strong` as a foreground color on a surface/card will look fine in light mode
     and then fail contrast in dark mode (both themes' accent-strong are dark, so dark-on-dark). This
-    exact bug happened once already in `RestaurantDetailScreen` — caught by screenshotting dark mode,
-    not by the type checker or linter, so **always screenshot both themes** when styling anything new.
+    exact bug has happened **twice** already across `RestaurantDetailScreen`/`ExploreMapScreen` (most
+    recently: a reused CSS class for both a review's star rating and its "vibe tag" text) — caught both
+    times by screenshotting dark mode, never by the type checker or linter. **Always screenshot both
+    themes** when styling anything new, and grep for `color-accent-strong` used as a `color:`/
+    `border-color:` (not `background-color:`) before calling a change done.
+  - One legitimate exception: a map pin/marker drawn on top of real map tile imagery (not one of our
+    surface/card tokens) — see `restaurantMarkerIcon.ts`. There, a single consistent brand-purple pin
+    regardless of theme is correct, since the backdrop is external tile imagery, not app chrome.
 
 ## Typography
 
@@ -84,9 +123,8 @@ than hardcoding `44px` in component styles.
   branded artwork before shipping.
 - `devOptions.enabled: true` so the service worker can be exercised in `npm run dev`, not just in
   builds/previews.
-- First real screen: `src/components/RestaurantDetailScreen.tsx` (built from an uploaded design
-  mockup), rendered directly by `App.tsx`. It uses hardcoded sample data (`SAMPLE_RESTAURANT`) — there
-  is no routing yet and this client isn't wired up to `server/`'s API.
+- Screens live in `src/pages/`; see "Routing" above for the current set and how they connect to the
+  real API.
 
 ## Deployment (Vercel)
 
@@ -100,10 +138,19 @@ than hardcoding `44px` in component styles.
 
 ## Commands
 
+Both the server and client need to be running for the app to actually work:
+
 ```bash
+# Terminal 1 — API
+cd server
+npm install
+npm run seed     # one-time, creates server/data/nyuad-eats.db
+npm run dev      # http://localhost:4000
+
+# Terminal 2 — client
 cd client
 npm install
-npm run dev      # http://localhost:5173 (or next free port)
+npm run dev      # http://localhost:5173 (or next free port), proxies /api to :4000
 npm run build    # tsc -b && vite build; also generates the service worker
 npm run preview  # serve the production build locally
 ```
