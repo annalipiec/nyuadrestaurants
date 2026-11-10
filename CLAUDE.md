@@ -34,37 +34,48 @@ server/   Express + SQLite API from an earlier iteration of this project
   doesn't return whether *this* user already liked each dish — so the heart always starts unfilled
   client-side, even if you'd liked it in a previous session. Fix requires a server change (join against
   `dish_likes` for the current user) if this needs to be accurate.
-- "Saved" (the bookmark button on the detail screen) is **local component state only** — there is no
-  backend endpoint for it. Don't assume it persists across reloads or devices.
+- "Saved" is **localStorage only** (`src/context/SavedContext.tsx`, key
+  `nyuad_eats_saved_restaurant_ids`) — there is no backend endpoint for it, and `SavedScreen` works by
+  fetching *all* restaurants and filtering client-side (no "get restaurants by id" endpoint exists).
+  Don't assume saves sync across devices/browsers.
 
 ## Routing
 
-`react-router-dom`, `BrowserRouter` set up in `main.tsx`. Routes (`App.tsx`):
-- `/` — `ExploreMapScreen`: real Leaflet map + searchable list of restaurants from the API, the app's
-  home screen.
-- `/restaurants/:id` — `RestaurantDetailScreen`: real restaurant data, dish likes, reviews ("tips").
-  The back button does `navigate(-1)`, not a fixed route, so it returns wherever the user came from.
-  Renders in one of two visual modes (see "Map-stays-visible overlay" below) — don't assume it always
-  has the illustrated header.
+`react-router-dom`, `BrowserRouter` set up in `main.tsx`. Four bottom-nav tabs share chrome via
+`MainTabsLayout` (nested under one `<Route>` in `App.tsx`, rendered via `<Outlet/>`), plus standalone
+routes outside that layout:
+
+- `/` — `MapScreen`: real Leaflet map + pins only, **no list** — this is the default landing tab.
+- `/explore` — `ExploreListScreen`: search + list only, **no map**. Shares row rendering
+  (`RestaurantRow.tsx`) and styles (`RestaurantList.css`) with `SavedScreen`.
+- `/saved` — `SavedScreen`: restaurants saved via `SavedContext`, same row component.
+- `/profile` — `ProfileScreen`: account info + log out when signed in; login/signup prompt otherwise.
+- `/restaurants/:id` — `RestaurantDetailScreen` (outside `MainTabsLayout`, no bottom nav): real
+  restaurant data, dish likes, reviews ("tips"). The back button does `navigate(-1)`, not a fixed
+  route, so it returns wherever the user came from. Renders in one of two visual modes (see
+  "Map-stays-visible overlay" below) — don't assume it always has the illustrated header.
 - `/login`, `/signup`, `/verify-email` — auth screens, styled to match (`AuthScreens.css`), gate the
   write actions (reviews, dishes, new restaurants need a verified email; dish likes just need login).
-- No "Saved" or "Profile" screens/bottom-nav exist — out of scope so far. If adding them, match the
-  nav bar shown in the uploaded mockup (`restaurant-detail.png`).
+
+**If you add a new screen that links to a restaurant** (a 5th tab, etc.), pass
+`state={{ backgroundLocation: location }}` the same way the existing tabs do, or it'll fall back to
+the full-page (non-overlay) render instead of the sheet-over-content one.
 
 ### Map-stays-visible overlay
 
-Opening a restaurant from `ExploreMapScreen` (map pin or list row) does **not** navigate away from the
-map — `RestaurantDetailScreen` instead slides up as a bottom sheet on top of it, dimmed backdrop
-behind, map still fully mounted and interactive-state-preserved underneath (zoom/pan/search query
-survive opening and closing the sheet). This is react-router's standard "background location" modal
-pattern, implemented in `App.tsx`:
+Opening a restaurant from any tab (a map pin, a list row) does **not** navigate away from that tab —
+`RestaurantDetailScreen` instead slides up as a bottom sheet on top of it (and on top of the bottom
+nav), dimmed backdrop behind, the tab still fully mounted and interactive-state-preserved underneath
+(zoom/pan/search query survive opening and closing the sheet). This is react-router's standard
+"background location" modal pattern, implemented in `App.tsx`:
 
-- Every `<Link>` that opens a restaurant from the Explore screen passes
-  `state={{ backgroundLocation: location }}` (see `ExploreMapScreen.tsx`).
-- `App.tsx` renders the main `<Routes>` using that `backgroundLocation` when present (so it keeps
-  showing `/` — the map — instead of switching to the restaurant route), then renders a **second**
-  `<Routes>` for just the restaurant route, wrapped in `DetailOverlay` (fixed backdrop + dismiss-on-
-  backdrop-click), on top of it.
+- Every `<Link>` that opens a restaurant passes `state={{ backgroundLocation: location }}` (see
+  `MapScreen.tsx`, `RestaurantRow.tsx` — used by both `ExploreListScreen` and `SavedScreen`).
+- `App.tsx` renders the main `<Routes>` (including the `MainTabsLayout` nested routes) using that
+  `backgroundLocation` when present, so it keeps showing whichever tab you were on instead of
+  switching to the restaurant route, then renders a **second** `<Routes>` for just the restaurant
+  route, wrapped in `DetailOverlay` (fixed backdrop + dismiss-on-backdrop-click), on top of everything
+  — including the bottom nav, which `DetailOverlay`'s `z-index` covers.
 - `RestaurantDetailScreen` takes an `embedded` prop for this: `embedded` skips the illustrated
   `MapHeaderGraphic` header entirely (the real map behind it already shows the location) and shows a
   lightweight close/share control row at the top of the sheet instead; the sheet becomes
@@ -94,6 +105,7 @@ read/write these same token names so this file stays the one place colors are de
 | `--color-map-land` | `#f3eef7` | `#2b0346`* |
 | `--color-map-water` | `#cdb5dd` | `#4e057e`* |
 | `--color-on-accent` | `#ffffff` | `#ffffff` (same in both) |
+| `--color-scrim` | `rgba(26,2,42,.45)` | same (same in both) |
 
 \* Dark-mode map colors were never specified in the original design spec (only light-mode values were
 given). The dark values above are a placeholder guess, not confirmed. **Before building the map

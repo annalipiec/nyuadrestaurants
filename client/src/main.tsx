@@ -5,12 +5,15 @@ import 'leaflet/dist/leaflet.css'
 import './styles/globals.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
+import { SavedProvider } from './context/SavedContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <SavedProvider>
+          <App />
+        </SavedProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

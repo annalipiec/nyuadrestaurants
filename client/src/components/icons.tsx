@@ -65,3 +65,30 @@ export function BusIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function MapIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} fill="none" aria-hidden="true">
+      <path d="M9 4 4 6v14l5-2 6 2 5-2V4l-5 2-6-2Z" />
+      <path d="M9 4v14M15 6v14" />
+    </svg>
+  )
+}
+
+export function SearchIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+    </svg>
+  )
+}
+
+export function UserIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  )
+}

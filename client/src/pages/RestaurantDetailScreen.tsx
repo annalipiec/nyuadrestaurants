@@ -14,16 +14,8 @@ import { addReview, getRestaurant, likeDish, listPhrases } from '../api/restaura
 import { apiErrorMessage } from '../api/client'
 import type { Dish, Restaurant, Review } from '../api/types'
 import { useAuth } from '../context/AuthContext'
-
-function initials(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
+import { useSaved } from '../context/SavedContext'
+import { initials } from '../utils/initials'
 
 function directionsUrl(restaurant: Restaurant) {
   const destination = `${restaurant.lat},${restaurant.lng}`
@@ -120,13 +112,13 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { isSaved, toggleSaved } = useSaved()
 
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [dishes, setDishes] = useState<DishWithLikeState[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [saved, setSaved] = useState(false)
   const [showTipForm, setShowTipForm] = useState(false)
 
   useEffect(() => {
@@ -223,11 +215,11 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
           <button
             type="button"
             className="icon-button icon-button--outline"
-            aria-label={saved ? 'Remove from saved' : 'Save this restaurant'}
-            aria-pressed={saved}
-            onClick={() => setSaved((value) => !value)}
+            aria-label={isSaved(restaurant.id) ? 'Remove from saved' : 'Save this restaurant'}
+            aria-pressed={isSaved(restaurant.id)}
+            onClick={() => toggleSaved(restaurant.id)}
           >
-            <BookmarkIcon filled={saved} />
+            <BookmarkIcon filled={isSaved(restaurant.id)} />
           </button>
         </div>
 

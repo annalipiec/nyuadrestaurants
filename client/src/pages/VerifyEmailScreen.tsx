@@ -55,8 +55,8 @@ export default function VerifyEmailScreen() {
     <div className="auth-screen">
       <h1 className="auth-screen__title">Verify your email</h1>
       <p className="auth-screen__subtitle">
-        Enter the 6-digit code sent to <strong>{user.email}</strong> to like dishes, leave reviews, and
-        add restaurants.
+        Enter the 6-digit code sent to <strong>{user.email}</strong> to leave reviews and add
+        restaurants.
       </p>
 
       <p className="auth-screen__dev-note">

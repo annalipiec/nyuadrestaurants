@@ -1,0 +1,13 @@
+.main-tabs-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--color-surface);
+}
+
+.main-tabs-layout__content {
+  flex: 1;
+  min-height: 0;
+}

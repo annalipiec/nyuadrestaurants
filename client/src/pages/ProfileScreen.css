@@ -1,0 +1,128 @@
+.profile-screen {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.5rem 1.25rem 2rem;
+  background-color: var(--color-surface);
+}
+
+.profile-screen__title {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+
+.profile-card__avatar {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.profile-card__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.profile-card__email {
+  margin: 0.15rem 0 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.profile-card__meta {
+  margin: 0.4rem 0 0;
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.profile-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background-color: var(--color-surface);
+  color: var(--color-accent);
+}
+
+.profile-screen__logout {
+  margin-top: 1.25rem;
+  width: 100%;
+  min-height: var(--tap-target-min);
+  border: 1.5px solid var(--color-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.profile-screen__verify-prompt {
+  margin-top: 0.9rem;
+  padding: 0.85rem;
+  border-radius: 14px;
+  border: 1.5px dashed var(--color-border);
+  background-color: var(--color-card);
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.profile-screen__verify-link {
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.profile-screen__signed-out {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+
+.profile-screen__signed-out-text {
+  margin: 0 0 1.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.profile-screen__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-target-min);
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  background-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-decoration: none;
+  margin-right: 0.5rem;
+}
+
+.profile-screen__cta--secondary {
+  background-color: transparent;
+  border: 1.5px solid var(--color-accent);
+  color: var(--color-accent);
+}
