@@ -146,7 +146,7 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
 
   function handleShare() {
     if (!restaurant) return
-    const shareData = { title: restaurant.name, text: `Check out ${restaurant.name} on NYUAD Eats`, url: window.location.href }
+    const shareData = { title: restaurant.name, text: `Check out ${restaurant.name} on AD Bites`, url: window.location.href }
     if (navigator.share) {
       navigator.share(shareData).catch(() => {})
     } else {

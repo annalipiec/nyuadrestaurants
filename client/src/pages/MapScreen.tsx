@@ -57,7 +57,7 @@ export default function MapScreen() {
       <div className="map-screen__topbar">
         <div className="map-screen__brand">
           <span className="map-screen__brand-mark" aria-hidden="true" />
-          <span className="map-screen__brand-name">NYUAD Eats</span>
+          <span className="map-screen__brand-name">AD Bites</span>
         </div>
       </div>
     </div>

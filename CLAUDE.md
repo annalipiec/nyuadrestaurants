@@ -4,8 +4,10 @@ Guidance for Claude Code sessions working in this repo.
 
 ## Project
 
-NYUAD Eats — a PWA for NYU Abu Dhabi students to discover affordable restaurants near campus:
-shuttle directions, must-try dishes, and community tips.
+AD Bites (formerly "NYUAD Eats") — a PWA for NYU Abu Dhabi students to discover affordable
+restaurants near campus: shuttle directions, must-try dishes, and community tips. App name, icons,
+and theme colors live in `index.html` and `client/vite.config.ts`'s PWA manifest — if the brand
+changes again, update both together.
 
 ## Structure
 
@@ -155,9 +157,10 @@ than hardcoding `44px` in component styles.
 
 - Configured via `vite-plugin-pwa` in `client/vite.config.ts`, `registerType: 'autoUpdate'`.
 - Manifest icons live in `client/public/`: `pwa-192x192.png`, `pwa-512x512.png`,
-  `maskable-512x512.png`, `apple-touch-icon.png`, `favicon.png`. These are placeholder icons (a
-  simple purple map-pin mark) generated to get the manifest/build working — swap them for real
-  branded artwork before shipping.
+  `maskable-512x512.png`, `apple-touch-icon.png`, `favicon.png` — the real "AD Bites" wordmark logo
+  (white text on `#44296e` purple), generated at each required size/safe-zone from the source artwork.
+  `theme_color`/`background_color` in the manifest and `index.html`'s `theme-color` meta tag are set
+  to that exact purple (`#44296e`) so there's no visible seam between the icon and the PWA chrome.
 - `devOptions.enabled: true` so the service worker can be exercised in `npm run dev`, not just in
   builds/previews.
 - Screens live in `src/pages/`; see "Routing" above for the current set and how they connect to the

@@ -32,7 +32,7 @@ export default function SignupScreen() {
       <Link to="/" className="auth-screen__back">
         ‹ Back to map
       </Link>
-      <h1 className="auth-screen__title">Join NYUAD Eats</h1>
+      <h1 className="auth-screen__title">Join AD Bites</h1>
       <p className="auth-screen__subtitle">
         Only @nyu.edu emails can sign up — this keeps reviews and likes verified and trustworthy.
       </p>

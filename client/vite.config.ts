@@ -16,13 +16,14 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'favicon.png'],
       manifest: {
-        name: 'NYUAD Eats',
-        short_name: 'NYUAD Eats',
+        name: 'AD Bites',
+        short_name: 'AD Bites',
         description:
           'Discover affordable restaurants near NYU Abu Dhabi, with shuttle directions, must-try dishes, and community tips.',
-        // Matches the light-theme accent-strong token (see src/styles/tokens.css).
-        theme_color: '#681f98',
-        background_color: '#ffffff',
+        // Matches the AD Bites logo's purple background exactly (public/pwa-512x512.png etc.),
+        // so the PWA splash screen and browser chrome tint match the icon with no visible seam.
+        theme_color: '#44296e',
+        background_color: '#44296e',
         display: 'standalone',
         start_url: '/',
         scope: '/',

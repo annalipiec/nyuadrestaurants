@@ -1,4 +1,6 @@
-# NYUAD Eats
+# AD Bites
+
+_(Formerly "NYUAD Eats" — renamed, same project.)_
 
 A community-built directory of affordable restaurants in Abu Dhabi, made by and for NYU Abu Dhabi
 students. Built around ideas that existing apps (Google Maps, TripAdvisor, Beli) don't cover well for
