@@ -1,0 +1,53 @@
+/*
+ * Design tokens for NYUAD Eats.
+ *
+ * Source of truth for these values is CLAUDE.md at the repo root — update both
+ * together. Theme switches automatically on the OS/browser's
+ * `prefers-color-scheme`; there is no manual light/dark toggle (none was
+ * requested, and this file is the only place that should need to change if
+ * one is added later).
+ */
+
+:root {
+  /* ---- Color (light is the default) ---- */
+  --color-text: #1a022a;
+  --color-text-muted: #4e057e;
+  --color-accent: #57068c;
+  --color-accent-strong: #681f98;
+  --color-surface: #ffffff;
+  --color-card: #f1e9f7; /* "tinted card" in the spec */
+  --color-border: #cdb5dd;
+  --color-map-land: #f3eef7;
+  --color-map-water: #cdb5dd;
+
+  /* ---- Type ---- */
+  --font-sans: 'Figtree Variable', 'Figtree', system-ui, sans-serif;
+  --font-weight-min: 400;
+  --font-weight-max: 800;
+
+  /* ---- Touch targets ---- */
+  /* Apply via the .tap-target utility (globals.css) on anything tappable:
+     buttons, links styled as controls, inputs, icon buttons. */
+  --tap-target-min: 44px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #ffffff;
+    --color-text-muted: #cdb5dd;
+    --color-accent: #ab83c6;
+    --color-accent-strong: #57068c;
+    --color-surface: #1a022a;
+    --color-card: #2b0346;
+    --color-border: #4e057e;
+
+    /*
+     * NOT specified in the original design spec (only light-mode map
+     * colors were given). These are a reasonable placeholder — land uses
+     * the dark card tone, water uses the dark border tone — but should be
+     * confirmed with design before the map screen ships.
+     */
+    --color-map-land: #2b0346;
+    --color-map-water: #4e057e;
+  }
+}

@@ -1,0 +1,34 @@
+@import '@fontsource-variable/figtree';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-min);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Minimum tappable area (44x44) for any interactive element. Content stays
+   visually whatever size the design calls for; this just pads the hit area. */
+.tap-target {
+  min-width: var(--tap-target-min);
+  min-height: var(--tap-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
