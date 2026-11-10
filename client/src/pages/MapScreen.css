@@ -17,6 +17,9 @@
   z-index: 500;
   display: flex;
   align-items: center;
+  /* Pushes the brand badge to the right so it doesn't collide with Leaflet's
+     default top-left zoom control (+/-). */
+  justify-content: flex-end;
   padding: 0.85rem 1rem;
 }
 
