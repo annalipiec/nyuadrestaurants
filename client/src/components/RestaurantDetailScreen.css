@@ -1,0 +1,299 @@
+.detail-screen {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  background-color: var(--color-surface);
+  overflow: hidden;
+}
+
+/* ---- Header / map area ---- */
+
+.detail-screen__header {
+  position: relative;
+  height: 340px;
+}
+
+.map-header-graphic {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.detail-screen__header-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.icon-button {
+  width: var(--tap-target-min);
+  height: var(--tap-target-min);
+  border-radius: 999px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface);
+  color: var(--color-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background-color: var(--color-card);
+}
+
+.icon-button--outline {
+  background-color: transparent;
+  border: 1.5px solid var(--color-accent);
+  box-shadow: none;
+}
+
+/* ---- Sheet ---- */
+
+.detail-screen__sheet {
+  position: relative;
+  margin-top: -24px;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  background-color: var(--color-surface);
+  padding: 0.75rem 1.25rem 2rem;
+}
+
+.detail-screen__handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: var(--color-border);
+  margin: 0 auto 1.1rem;
+}
+
+.detail-screen__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.detail-screen__name {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.detail-screen__cuisine {
+  margin: 0.2rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* ---- Getting there card ---- */
+
+.getting-there-card {
+  width: 100%;
+  margin-top: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 18px;
+  background-color: var(--color-card);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  min-height: var(--tap-target-min);
+}
+
+.getting-there-card__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.getting-there-card__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.getting-there-card__label {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.getting-there-card__value {
+  margin: 0.1rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.getting-there-card__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+/* ---- Happy hours ---- */
+
+.happy-hours-bar {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 999px;
+  background-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  min-height: var(--tap-target-min);
+}
+
+.happy-hours-bar__label {
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.happy-hours-bar__value {
+  font-weight: 500;
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+/* ---- Sections ---- */
+
+.detail-screen__section {
+  margin-top: 1.5rem;
+}
+
+.detail-screen__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.detail-screen__section-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.detail-screen__link-button {
+  background: none;
+  border: none;
+  padding: 0.5rem 0.25rem;
+  min-height: var(--tap-target-min);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---- Dish cards ---- */
+
+.dish-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.dish-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  border-radius: 16px;
+  border: 1.5px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.dish-card__name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.dish-card__like {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin: -0.5rem -0.4rem 0 0;
+  border: none;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.dish-card__like:not(.dish-card__like--liked) {
+  color: var(--color-text-muted);
+}
+
+/* ---- Community tips ---- */
+
+.tip-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 16px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+
+.tip-card__avatar {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tip-card__body {
+  min-width: 0;
+}
+
+.tip-card__author {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.tip-card__text {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}

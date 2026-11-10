@@ -35,6 +35,7 @@ read/write these same token names so this file stays the one place colors are de
 | `--color-border` | `#cdb5dd` | `#4e057e` |
 | `--color-map-land` | `#f3eef7` | `#2b0346`* |
 | `--color-map-water` | `#cdb5dd` | `#4e057e`* |
+| `--color-on-accent` | `#ffffff` | `#ffffff` (same in both) |
 
 \* Dark-mode map colors were never specified in the original design spec (only light-mode values were
 given). The dark values above are a placeholder guess, not confirmed. **Before building the map
@@ -45,6 +46,17 @@ screen, confirm real dark-mode map land/water colors** and update both `tokens.c
   (`var(--color-accent)`, etc.) so light/dark both stay correct automatically.
 - If a new semantic color is needed, add it to `tokens.css` under both the `:root` block and the
   `prefers-color-scheme: dark` block, and add a row to the table above.
+- **`--color-accent` vs `--color-accent-strong` — this distinction matters and is easy to get backwards:**
+  - `--color-accent-strong` is for **solid fill backgrounds only** (a filled bar/pill, an icon badge).
+    It stays a dark/medium-dark purple in both themes. Pair it with `--color-on-accent` for the
+    foreground content on top of it.
+  - `--color-accent` is for **foreground content sitting on a surface/card background** — icon colors,
+    link text, borders, "ink" in an illustration. It's specifically tuned per theme (dark purple on
+    light, light lavender on dark) to stay legible against `--color-surface`/`--color-card`.
+  - Using `--color-accent-strong` as a foreground color on a surface/card will look fine in light mode
+    and then fail contrast in dark mode (both themes' accent-strong are dark, so dark-on-dark). This
+    exact bug happened once already in `RestaurantDetailScreen` — caught by screenshotting dark mode,
+    not by the type checker or linter, so **always screenshot both themes** when styling anything new.
 
 ## Typography
 
@@ -72,8 +84,9 @@ than hardcoding `44px` in component styles.
   branded artwork before shipping.
 - `devOptions.enabled: true` so the service worker can be exercised in `npm run dev`, not just in
   builds/previews.
-- No screens exist yet — `App.tsx` is intentionally a blank shell that only proves tokens/fonts/PWA
-  config work end to end.
+- First real screen: `src/components/RestaurantDetailScreen.tsx` (built from an uploaded design
+  mockup), rendered directly by `App.tsx`. It uses hardcoded sample data (`SAMPLE_RESTAURANT`) — there
+  is no routing yet and this client isn't wired up to `server/`'s API.
 
 ## Deployment (Vercel)
 

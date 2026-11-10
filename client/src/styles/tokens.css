@@ -20,6 +20,14 @@
   --color-map-land: #f3eef7;
   --color-map-water: #cdb5dd;
 
+  /*
+   * Foreground for content placed on a solid --color-accent-strong fill
+   * (e.g. the happy-hours bar, an icon badge). Both themes' accent-strong
+   * are dark/medium-dark purples, so this intentionally does NOT flip
+   * under prefers-color-scheme — it's defined once, here, for both.
+   */
+  --color-on-accent: #ffffff;
+
   /* ---- Type ---- */
   --font-sans: 'Figtree Variable', 'Figtree', system-ui, sans-serif;
   --font-weight-min: 400;
