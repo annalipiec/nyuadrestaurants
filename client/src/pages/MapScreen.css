@@ -37,7 +37,8 @@
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background-color: var(--color-accent-strong);
+  object-fit: cover;
+  display: block;
 }
 
 .map-screen__brand-name {

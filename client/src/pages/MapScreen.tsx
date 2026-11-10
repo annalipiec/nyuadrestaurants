@@ -56,7 +56,7 @@ export default function MapScreen() {
 
       <div className="map-screen__topbar">
         <div className="map-screen__brand">
-          <span className="map-screen__brand-mark" aria-hidden="true" />
+          <img src="/favicon.png" alt="" className="map-screen__brand-mark" />
           <span className="map-screen__brand-name">AD Bites</span>
         </div>
       </div>
