@@ -31,15 +31,17 @@ export default function ExploreMapScreen() {
       <div className="explore-screen__map">
         <MapContainer center={NYUAD_CENTER} zoom={12}>
           {/*
-            CARTO's free basemaps, not raw tile.openstreetmap.org — the latter
-            actively blocks shared/automated traffic (exactly what a Codespace
-            or CI box looks like to it) per OSM's tile usage policy
-            (osm.wiki/Blocked). CARTO's tiles are explicitly meant for
-            third-party apps and still carry OSM attribution/data underneath.
+            Esri's free street basemap — not raw tile.openstreetmap.org (which
+            blocks shared/automated traffic like a Codespace's egress IP, per
+            osm.wiki/Blocked) and not CARTO's basemaps.cartocdn.com (which
+            started requiring an API key). This Esri endpoint is the standard
+            no-API-key fallback used across most Leaflet apps for exactly this
+            reason. Note the {z}/{y}/{x} order — Esri, unlike most XYZ tile
+            servers, puts y before x.
           */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            attribution='Tiles &copy; Esri — Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
           />
           {restaurants.map((r) => (
             <Marker
