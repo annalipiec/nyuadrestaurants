@@ -297,3 +297,111 @@
   color: var(--color-text-muted);
   line-height: 1.4;
 }
+
+.tip-card__stars {
+  font-size: 0.78rem;
+  color: var(--color-accent);
+  letter-spacing: 1px;
+}
+
+/* ---- Loading / not-found states ---- */
+
+.detail-screen__state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+/* ---- Auth prompts (login / verify) gating an action ---- */
+
+.detail-screen__prompt {
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 14px;
+  border: 1.5px dashed var(--color-border);
+  background-color: var(--color-card);
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.detail-screen__prompt-link {
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ---- Add a tip form ---- */
+
+.add-tip-form {
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 16px;
+  background-color: var(--color-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.add-tip-form__stars {
+  display: inline-flex;
+  gap: 0.15rem;
+}
+
+.add-tip-form__star {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--color-border);
+  cursor: pointer;
+}
+
+.add-tip-form__star--filled {
+  color: var(--color-accent);
+}
+
+.add-tip-form__select,
+.add-tip-form__textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.add-tip-form__textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.add-tip-form__submit {
+  align-self: flex-start;
+  min-height: var(--tap-target-min);
+  padding: 0 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+.add-tip-form__submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.add-tip-form__error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #c0315f;
+}

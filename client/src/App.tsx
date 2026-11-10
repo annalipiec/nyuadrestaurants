@@ -1,16 +1,24 @@
-import './App.css'
-import RestaurantDetailScreen from './components/RestaurantDetailScreen'
+import { Route, Routes } from 'react-router-dom'
+import ExploreMapScreen from './pages/ExploreMapScreen'
+import RestaurantDetailScreen from './pages/RestaurantDetailScreen'
+import LoginScreen from './pages/LoginScreen'
+import SignupScreen from './pages/SignupScreen'
+import VerifyEmailScreen from './pages/VerifyEmailScreen'
 
 /**
- * First real screen, built from the "Ting Irie" design mockup. Uses sample
- * data only — this client isn't wired up to the Express/SQLite API yet.
- * See CLAUDE.md for the design tokens/rules this is built against.
+ * Wired up to the real server/ API (see CLAUDE.md) — ExploreMapScreen is the
+ * home screen (map + list of real restaurants), tapping one opens
+ * RestaurantDetailScreen with real data, likes, and reviews.
  */
 function App() {
   return (
-    <div className="app-backdrop">
-      <RestaurantDetailScreen />
-    </div>
+    <Routes>
+      <Route path="/" element={<ExploreMapScreen />} />
+      <Route path="/restaurants/:id" element={<RestaurantDetailScreen />} />
+      <Route path="/login" element={<LoginScreen />} />
+      <Route path="/signup" element={<SignupScreen />} />
+      <Route path="/verify-email" element={<VerifyEmailScreen />} />
+    </Routes>
   )
 }
 
