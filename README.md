@@ -54,11 +54,10 @@ npm run dev        # http://localhost:4000
 cd ../client && npm run dev   # http://localhost:5173 (or next free port), proxies /api to :4000
 ```
 
-Open the client URL it prints. Sign up with any `@nyu.edu`-style email. No real email provider is
-wired up yet, so after signup you'll land on `/verify-email` with your 6-digit verification code shown
+Open the client URL it prints. Sign up with any `@nyu.edu`-style email. Locally, with no `SMTP_USER`/`SMTP_PASS`
+in `server/.env`, no email is sent: after signup you'll land on `/verify-email` with your 6-digit verification code shown
 directly on the page (also logged by the server as `[DEV] Verification code for ...`) — enter it to
-unlock liking dishes and posting reviews. See "What's stubbed out" below for swapping this for real
-email delivery.
+unlock liking dishes and posting reviews. Set `SMTP_USER`/`SMTP_PASS` to send real emails locally too.
 
 To reseed from scratch, stop the server and delete `server/data/nyuad-eats.db*`, then run
 `npm run seed` again.
@@ -76,6 +75,8 @@ at `/api`). The database is hosted on Turso, since Vercel functions can't keep a
    - `TURSO_DATABASE_URL`: the `libsql://…` URL
    - `TURSO_AUTH_TOKEN`: the token
    - `JWT_SECRET`: any long random string (e.g. `openssl rand -hex 32`)
+   - `SMTP_USER` / `SMTP_PASS`: the Gmail address that sends verification codes, and a Google
+     [app password](https://myaccount.google.com/apppasswords) for it (needs 2-Step Verification on)
 4. Deploy. The first API request creates the tables and loads the demo restaurants automatically.
 
 ## Feature tour
@@ -104,11 +105,9 @@ Life — these change by semester and the seeded ones are approximate placeholde
 
 ## What's stubbed out / next steps
 
-- **Real email delivery**: verification codes are generated and gate posting correctly, but they're
-  returned in the API response / logged to the server console instead of actually emailed (see
-  `issueDevVerificationCode` in `server/src/routes/auth.js`). To send real email, swap that function
-  for a call to a provider (e.g. Resend, SendGrid, Postmark) and stop returning `dev_verification_code`
-  in the signup/resend API responses.
+- **Email sender**: verification codes go out through a Gmail account (SMTP + app password, ~500
+  emails/day). For a custom from-address and better deliverability, point `SMTP_HOST`/`SMTP_USER`/
+  `SMTP_PASS`/`EMAIL_FROM` at a provider like Resend with your own domain.
 - **Submitting a new restaurant**: the API supports it (`POST /restaurants`, starts `unverified`), but
   there's no client screen for it yet.
 - **"Saved" and "Profile" screens**: no backend endpoint for saving a restaurant exists yet (the
@@ -125,7 +124,7 @@ All endpoints are under `/api`. Auth uses `Authorization: Bearer <token>` from `
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/auth/signup` | – | Create account (`@nyu.edu` only); returns `dev_verification_code` |
+| POST | `/auth/signup` | – | Create account (`@nyu.edu` only); emails a verification code (returns `dev_verification_code` instead in local dev without SMTP) |
 | POST | `/auth/login` | – | Log in |
 | GET | `/auth/me` | required | Current user (includes `email_verified`) |
 | POST | `/auth/verify` | required | Confirm the 6-digit code to set `email_verified = true` |

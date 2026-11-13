@@ -1,3 +1,5 @@
+import { randomInt } from 'crypto';
+
 // Price tiers are computed from avg_meal_price_aed rather than stored,
 // so the label always reflects the current price (e.g. after a review updates it).
 export const MEAL_SWIPE_AED = 33; // NYUAD dining hall meal swipe value, used as the "affordable" anchor
@@ -14,10 +16,12 @@ export function priceTierFor(avgMealPriceAed) {
 
 export const VERIFICATION_CODE_LENGTH = 6;
 export const VERIFICATION_EXPIRY_MINUTES = 15;
+export const VERIFICATION_MAX_ATTEMPTS = 5; // wrong guesses before the code is invalidated
+export const VERIFICATION_RESEND_COOLDOWN_SECONDS = 60;
 
 export function generateVerificationCode() {
   const max = 10 ** VERIFICATION_CODE_LENGTH;
-  return String(Math.floor(Math.random() * max)).padStart(VERIFICATION_CODE_LENGTH, '0');
+  return String(randomInt(max)).padStart(VERIFICATION_CODE_LENGTH, '0');
 }
 
 // Optional "vibe" tag a reviewer can attach alongside their star rating.

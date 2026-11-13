@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified INTEGER NOT NULL DEFAULT 0,
   verification_code TEXT,
   verification_expires_at TEXT,
+  verification_attempts INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -165,6 +166,9 @@ async function init() {
       ALTER TABLE users ADD COLUMN verification_code TEXT;
       ALTER TABLE users ADD COLUMN verification_expires_at TEXT;
     `);
+  }
+  if (!userColumns.includes('verification_attempts')) {
+    await client.execute('ALTER TABLE users ADD COLUMN verification_attempts INTEGER NOT NULL DEFAULT 0');
   }
 
   const { seedIfEmpty } = await import('./seed.js');

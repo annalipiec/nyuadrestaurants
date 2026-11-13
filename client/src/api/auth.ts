@@ -11,7 +11,10 @@ export type SignupPayload = {
 export type AuthResponse = {
   token: string
   user: User
+  /** Only present in local dev when the server has no email provider configured. */
   dev_verification_code?: string
+  /** false if the server couldn't send the verification email (user can resend). */
+  email_sent?: boolean
 }
 
 export async function signup(payload: SignupPayload) {
@@ -35,6 +38,8 @@ export async function verifyEmail(code: string) {
 }
 
 export async function resendVerification() {
-  const { data } = await api.post<{ dev_verification_code: string }>('/auth/resend-verification')
+  const { data } = await api.post<{ dev_verification_code?: string; email_sent?: boolean }>(
+    '/auth/resend-verification'
+  )
   return data.dev_verification_code
 }

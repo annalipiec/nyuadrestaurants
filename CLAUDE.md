@@ -34,9 +34,10 @@ server/   Express + SQLite API from an earlier iteration of this project
   `localStorage`, key `nyuad_eats_token`), `types.ts` (mirrors server response shapes — keep in sync
   with `server/src/routes/*.js`), `restaurants.ts`, `auth.ts`, `shuttles.ts`.
 - Auth: `src/context/AuthContext.tsx` holds the current `User` and exposes `signup`/`login`/`logout`/
-  `verifyEmail`/`resendVerification`. Mirrors the server's nyu.edu-only signup + dev-mode email
-  verification (code shown on screen, not actually emailed — see `server`'s own CLAUDE-equivalent
-  notes / `issueDevVerificationCode` in `server/src/routes/auth.js`).
+  `verifyEmail`/`resendVerification`. Mirrors the server's nyu.edu-only signup + email
+  verification. Codes are emailed via Gmail SMTP (`server/src/utils/email.js`); only in local dev
+  with no `SMTP_USER`/`SMTP_PASS` does the API return `dev_verification_code`, which
+  `VerifyEmailScreen` then shows on screen. 5 wrong tries cancel a code; resend has a 60s cooldown.
 - **Known gap**: liking a dish calls `POST /api/dishes/:id/like`, but `GET /api/restaurants/:id`
   doesn't return whether *this* user already liked each dish — so the heart always starts unfilled
   client-side, even if you'd liked it in a previous session. Fix requires a server change (join against
@@ -179,7 +180,8 @@ than hardcoding `44px` in component styles.
   re-exports `server/src/app.js` (Express app without `listen()`; `server/src/index.js` adds `listen()`
   for local dev). Everything else falls back to `/index.html` for client-side routing.
 - The root `package.json` exists only to mark `api/index.js` as ESM and pin Node; it has no deps.
-- Vercel env vars required: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `JWT_SECRET`. Without the Turso
+- Vercel env vars required: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `JWT_SECRET`, `SMTP_USER`,
+  `SMTP_PASS` (Gmail address + Google app password; see `server/src/utils/email.js`). Without the Turso
   vars the function would try to write a local SQLite file, which doesn't persist on Vercel.
 - A brand-new Turso DB auto-seeds on the first API request (see `ready()` above).
 - Live: https://ad-bites.vercel.app — Vercel project `ad-bites` (team `anna-d6f0`). The Turso DB
