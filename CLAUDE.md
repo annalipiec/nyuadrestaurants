@@ -22,9 +22,14 @@ server/   Express + SQLite API from an earlier iteration of this project
 
 ## Backend integration
 
-- `client/vite.config.ts` proxies `/api` → `http://localhost:4000` in dev. In production this proxy
-  doesn't exist — whatever hosts the built client needs to either serve the API from the same origin
-  or this needs a real API base URL / CORS setup. Not solved yet.
+- `client/vite.config.ts` proxies `/api` → `http://localhost:4000` in dev. In production (Vercel) the
+  same Express app is served from the same origin at `/api` (see "Deployment" below), so the client's
+  relative `/api` base URL works unchanged everywhere.
+- The server's DB layer (`server/src/db/index.js`) uses `@libsql/client`, **async** — every query is
+  `await db.get/all/run(sql, ...args)` (or one object of `@named` args), plus `db.transaction(fn)`.
+  `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` set → hosted Turso DB; unset → local file
+  `server/data/nyuad-eats.db`. `ready()` creates tables and seeds demo data if `restaurants` is empty;
+  `app.js` awaits it before any route runs.
 - `client/src/api/` is the typed API layer: `client.ts` (axios instance + JWT token storage in
   `localStorage`, key `nyuad_eats_token`), `types.ts` (mirrors server response shapes — keep in sync
   with `server/src/routes/*.js`), `restaurants.ts`, `auth.ts`, `shuttles.ts`.
@@ -168,13 +173,15 @@ than hardcoding `44px` in component styles.
 
 ## Deployment (Vercel)
 
-- `client/vercel.json` sets `framework: vite`, the build command, `outputDirectory: dist`, and an SPA
-  rewrite (`/(.*) → /index.html`) for whenever client-side routing is added.
-- **Because this repo has both `client/` and `server/` at the root, the Vercel project's Root
-  Directory must be set to `client`** in Project Settings → General. There's no way to express that
-  in `vercel.json` itself — it's a dashboard/CLI project setting
-  (`vercel link` then set Root Directory, or set it in the dashboard before the first deploy).
-- `server/` is not deployed by this Vercel config at all; it's a separate Node process today.
+- Deployed as **one Vercel project with Root Directory = repo root** (not `client/`). Config is the
+  root `vercel.json`: installs `client/` and `server/` deps separately, builds `client/` to
+  `client/dist` (static), and rewrites `/api/*` to `api/index.js` — a serverless function that just
+  re-exports `server/src/app.js` (Express app without `listen()`; `server/src/index.js` adds `listen()`
+  for local dev). Everything else falls back to `/index.html` for client-side routing.
+- The root `package.json` exists only to mark `api/index.js` as ESM and pin Node; it has no deps.
+- Vercel env vars required: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `JWT_SECRET`. Without the Turso
+  vars the function would try to write a local SQLite file, which doesn't persist on Vercel.
+- A brand-new Turso DB auto-seeds on the first API request (see `ready()` above).
 
 ## Commands
 
@@ -184,7 +191,7 @@ Both the server and client need to be running for the app to actually work:
 # Terminal 1 — API
 cd server
 npm install
-npm run seed     # one-time, creates server/data/nyuad-eats.db
+npm run seed     # optional — the server also creates + seeds server/data/nyuad-eats.db on start
 npm run dev      # http://localhost:4000
 
 # Terminal 2 — client

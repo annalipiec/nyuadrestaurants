@@ -6,68 +6,15 @@
 // actual knowledge (or let the community submit it via "Add a restaurant" once seeded
 // users start reviewing). Shuttle stop coordinates are approximate/illustrative too —
 // swap in the real current shuttle schedule/route from NYUAD Campus Life.
+//
+// Runs automatically on startup when the restaurants table is empty (see ready() in ./index.js),
+// so a fresh Turso database gets demo content on the first request. `npm run seed` runs it by hand.
 import bcrypt from 'bcryptjs';
-import db from './index.js';
+import { pathToFileURL } from 'url';
+import db, { ready } from './index.js';
 
-const already = db.prepare('SELECT COUNT(*) AS c FROM restaurants').get().c;
-if (already > 0) {
-  console.log('Database already has data — skipping seed. Delete server/data/nyuad-eats.db to reseed.');
-  process.exit(0);
-}
-
-const insertUser = db.prepare(
-  `INSERT INTO users (email, name, password_hash, class_year, email_verified) VALUES (?, ?, ?, ?, 1)`
-);
-const demoPasswordHash = bcrypt.hashSync('nyuadeats-demo', 10);
-const seedUserId = insertUser.run('eats-team@nyu.edu', 'NYUAD Eats Team', demoPasswordHash, 2026).lastInsertRowid;
-
-const insertRoute = db.prepare(`INSERT INTO shuttle_routes (name, color, path_json) VALUES (?, ?, ?)`);
-const insertStop = db.prepare(`INSERT INTO shuttle_stops (name, lat, lng, route_id) VALUES (?, ?, ?, ?)`);
-
-const saadiyatRouteId = insertRoute.run(
-  'Saadiyat ↔ Downtown Loop (example)',
-  '#57068C',
-  JSON.stringify([
-    [24.5335, 54.4380],
-    [24.5205, 54.4190],
-    [24.5013, 54.3959],
-    [24.4913, 54.3679],
-    [24.4890, 54.3585],
-  ])
-).lastInsertRowid;
-
-const yasRouteId = insertRoute.run(
-  'Saadiyat ↔ Yas Island (example)',
-  '#9B5DE0',
-  JSON.stringify([
-    [24.5335, 54.4380],
-    [24.5120, 54.5200],
-    [24.4913, 54.6069],
-  ])
-).lastInsertRowid;
-
-const stops = {
-  campus: insertStop.run('NYUAD Campus – Bus Loop', 24.5335, 54.4380, saadiyatRouteId).lastInsertRowid,
-  saadiyatBeach: insertStop.run('Saadiyat Beach District', 24.5445, 54.4275, saadiyatRouteId).lastInsertRowid,
-  reem: insertStop.run('Al Reem Island Stop', 24.4993, 54.4028, saadiyatRouteId).lastInsertRowid,
-  hamdan: insertStop.run('Hamdan Street Stop', 24.4913, 54.3679, saadiyatRouteId).lastInsertRowid,
-  downtown: insertStop.run('Downtown / Electra Street Stop', 24.4890, 54.3585, saadiyatRouteId).lastInsertRowid,
-  yas: insertStop.run('Yas Mall Stop', 24.4913, 54.6069, yasRouteId).lastInsertRowid,
-};
-
-const insertRestaurant = db.prepare(`
-  INSERT INTO restaurants
-    (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, nearest_shuttle_stop_id, submitted_by, verified)
-  VALUES (@name, @cuisine, @neighborhood, @address, @lat, @lng, @avg_meal_price_aed, @description, @happy_hour_info, @nearest_shuttle_stop_id, @submitted_by, 1)
-`);
-const insertDish = db.prepare(
-  `INSERT INTO dishes (restaurant_id, name, price_aed, added_by) VALUES (?, ?, ?, ?)`
-);
-const insertReview = db.prepare(
-  `INSERT INTO reviews (restaurant_id, user_id, stars, nyuad_phrase, text) VALUES (?, ?, ?, ?, ?)`
-);
-
-const restaurants = [
+function buildRestaurants(stops) {
+return [
   {
     name: 'Automatic Restaurant',
     cuisine: 'Lebanese',
@@ -238,6 +185,8 @@ const restaurants = [
   },
 ];
 
+}
+
 const reviewTemplates = [
   [5, 'Would shuttle back for this', 'Went with the whole floor after finals and it did not disappoint.'],
   [4, 'First-week find', 'Found this in my first month and still come back a lot.'],
@@ -245,16 +194,95 @@ const reviewTemplates = [
   [3, 'Study break treat', 'Decent, a bit far from campus but fine for a change of scenery.'],
 ];
 
-const restaurantIdByName = {};
-for (const r of restaurants) {
-  const { dishes, ...row } = r;
-  const id = insertRestaurant.run({ ...row, submitted_by: seedUserId }).lastInsertRowid;
-  restaurantIdByName[r.name] = id;
-  for (const [dishName, price] of dishes) {
-    insertDish.run(id, dishName, price, seedUserId);
-  }
-  const [stars, phrase, text] = reviewTemplates[id % reviewTemplates.length];
-  insertReview.run(id, seedUserId, stars, phrase, text);
+// Returns true if it seeded, false if the database already had restaurants.
+export async function seedIfEmpty() {
+  return db.transaction(async (tx) => {
+    const already = (await tx.get('SELECT COUNT(*) AS c FROM restaurants')).c;
+    if (already > 0) return false;
+
+    const demoPasswordHash = bcrypt.hashSync('nyuadeats-demo', 10);
+    const existingSeedUser = await tx.get('SELECT id FROM users WHERE email = ?', 'eats-team@nyu.edu');
+    const seedUserId =
+      existingSeedUser?.id ??
+      (
+        await tx.run(
+          `INSERT INTO users (email, name, password_hash, class_year, email_verified) VALUES (?, ?, ?, ?, 1)`,
+          'eats-team@nyu.edu',
+          'NYUAD Eats Team',
+          demoPasswordHash,
+          2026
+        )
+      ).lastInsertRowid;
+
+    const insertRoute = async (name, color, path) =>
+      (await tx.run(`INSERT INTO shuttle_routes (name, color, path_json) VALUES (?, ?, ?)`, name, color, JSON.stringify(path)))
+        .lastInsertRowid;
+    const insertStop = async (name, lat, lng, routeId) =>
+      (await tx.run(`INSERT INTO shuttle_stops (name, lat, lng, route_id) VALUES (?, ?, ?, ?)`, name, lat, lng, routeId))
+        .lastInsertRowid;
+
+    const saadiyatRouteId = await insertRoute('Saadiyat ↔ Downtown Loop (example)', '#57068C', [
+      [24.5335, 54.4380],
+      [24.5205, 54.4190],
+      [24.5013, 54.3959],
+      [24.4913, 54.3679],
+      [24.4890, 54.3585],
+    ]);
+    const yasRouteId = await insertRoute('Saadiyat ↔ Yas Island (example)', '#9B5DE0', [
+      [24.5335, 54.4380],
+      [24.5120, 54.5200],
+      [24.4913, 54.6069],
+    ]);
+
+    const stops = {
+      campus: await insertStop('NYUAD Campus – Bus Loop', 24.5335, 54.4380, saadiyatRouteId),
+      saadiyatBeach: await insertStop('Saadiyat Beach District', 24.5445, 54.4275, saadiyatRouteId),
+      reem: await insertStop('Al Reem Island Stop', 24.4993, 54.4028, saadiyatRouteId),
+      hamdan: await insertStop('Hamdan Street Stop', 24.4913, 54.3679, saadiyatRouteId),
+      downtown: await insertStop('Downtown / Electra Street Stop', 24.4890, 54.3585, saadiyatRouteId),
+      yas: await insertStop('Yas Mall Stop', 24.4913, 54.6069, yasRouteId),
+    };
+
+    const restaurants = buildRestaurants(stops);
+    for (const r of restaurants) {
+      const { dishes, ...row } = r;
+      const { lastInsertRowid: id } = await tx.run(
+        `INSERT INTO restaurants
+          (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, nearest_shuttle_stop_id, submitted_by, verified)
+         VALUES (@name, @cuisine, @neighborhood, @address, @lat, @lng, @avg_meal_price_aed, @description, @happy_hour_info, @nearest_shuttle_stop_id, @submitted_by, 1)`,
+        { ...row, submitted_by: seedUserId }
+      );
+      for (const [dishName, price] of dishes) {
+        await tx.run(
+          `INSERT INTO dishes (restaurant_id, name, price_aed, added_by) VALUES (?, ?, ?, ?)`,
+          id,
+          dishName,
+          price,
+          seedUserId
+        );
+      }
+      const [stars, phrase, text] = reviewTemplates[id % reviewTemplates.length];
+      await tx.run(
+        `INSERT INTO reviews (restaurant_id, user_id, stars, nyuad_phrase, text) VALUES (?, ?, ?, ?, ?)`,
+        id,
+        seedUserId,
+        stars,
+        phrase,
+        text
+      );
+    }
+
+    console.log(`Seeded ${restaurants.length} restaurants, shuttle stops, and demo reviews.`);
+    return true;
+  });
 }
 
-console.log(`Seeded ${restaurants.length} restaurants, shuttle stops, and demo reviews.`);
+// `npm run seed` — ready() creates the schema and seeds if empty.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const before = (await db.get('SELECT COUNT(*) AS c FROM sqlite_master WHERE name = ?', 'restaurants')).c;
+  await ready();
+  if (before) {
+    const count = (await db.get('SELECT COUNT(*) AS c FROM restaurants')).c;
+    console.log(`Database has ${count} restaurants (seed only runs when the table is empty).`);
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "ad-bites",
+  "private": true,
+  "type": "module",
+  "description": "Deployment wrapper: Vercel builds client/ and runs server/ as the /api function. See vercel.json.",
+  "engines": {
+    "node": "24.x"
+  }
+}

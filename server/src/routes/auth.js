@@ -33,7 +33,7 @@ function issueDevVerificationCode(email) {
   return code;
 }
 
-router.post('/signup', (req, res) => {
+router.post('/signup', async (req, res) => {
   const { email, name, password, class_year } = req.body || {};
   if (!email || !name || !password) {
     return res.status(400).json({ error: 'Name, NYU email, and password are required.' });
@@ -45,30 +45,26 @@ router.post('/signup', (req, res) => {
     return res.status(400).json({ error: 'Password must be at least 8 characters.' });
   }
 
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
+  const existing = await db.get('SELECT id FROM users WHERE email = ?', email.toLowerCase());
   if (existing) {
     return res.status(409).json({ error: 'An account with that email already exists.' });
   }
 
   const password_hash = bcrypt.hashSync(password, 10);
   const code = issueDevVerificationCode(email.toLowerCase());
-  const info = db
-    .prepare(
-      `INSERT INTO users (email, name, password_hash, class_year, verification_code, verification_expires_at)
-       VALUES (?, ?, ?, ?, ?, ?)`
-    )
-    .run(email.toLowerCase(), name, password_hash, class_year || null, code, expiryTimestamp());
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+  const info = await db.run(`INSERT INTO users (email, name, password_hash, class_year, verification_code, verification_expires_at)
+       VALUES (?, ?, ?, ?, ?, ?)`, email.toLowerCase(), name, password_hash, class_year || null, code, expiryTimestamp());
+  const user = await db.get('SELECT * FROM users WHERE id = ?', info.lastInsertRowid);
   const token = signToken(user);
   res.status(201).json({ token, user: publicUser(user), dev_verification_code: code });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
+  const user = await db.get('SELECT * FROM users WHERE email = ?', email.toLowerCase());
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
@@ -76,15 +72,15 @@ router.post('/login', (req, res) => {
   res.json({ token, user: publicUser(user) });
 });
 
-router.get('/me', requireAuth, (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+router.get('/me', requireAuth, async (req, res) => {
+  const user = await db.get('SELECT * FROM users WHERE id = ?', req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found.' });
   res.json({ user: publicUser(user) });
 });
 
-router.post('/verify', requireAuth, (req, res) => {
+router.post('/verify', requireAuth, async (req, res) => {
   const { code } = req.body || {};
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  const user = await db.get('SELECT * FROM users WHERE id = ?', req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found.' });
   if (user.email_verified) {
     return res.json({ user: publicUser(user), message: 'Already verified.' });
@@ -99,22 +95,20 @@ router.post('/verify', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Incorrect code. Please try again.' });
   }
 
-  db.prepare(
-    'UPDATE users SET email_verified = 1, verification_code = NULL, verification_expires_at = NULL WHERE id = ?'
-  ).run(user.id);
-  const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
+  await db.run('UPDATE users SET email_verified = 1, verification_code = NULL, verification_expires_at = NULL WHERE id = ?', user.id);
+  const updated = await db.get('SELECT * FROM users WHERE id = ?', user.id);
   res.json({ user: publicUser(updated) });
 });
 
-router.post('/resend-verification', requireAuth, (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+router.post('/resend-verification', requireAuth, async (req, res) => {
+  const user = await db.get('SELECT * FROM users WHERE id = ?', req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found.' });
   if (user.email_verified) {
     return res.status(400).json({ error: 'This account is already verified.' });
   }
 
   const code = issueDevVerificationCode(user.email);
-  db.prepare('UPDATE users SET verification_code = ?, verification_expires_at = ? WHERE id = ?').run(
+  await db.run('UPDATE users SET verification_code = ?, verification_expires_at = ? WHERE id = ?', 
     code,
     expiryTimestamp(),
     user.id

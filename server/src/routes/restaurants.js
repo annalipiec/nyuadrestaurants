@@ -6,23 +6,15 @@ import { nearestStop } from '../utils/geo.js';
 
 const router = Router();
 
-function decorateRestaurant(r) {
-  const dishes = db
-    .prepare(
-      `SELECT d.id, d.name, d.price_aed,
+async function decorateRestaurant(r) {
+  const dishes = await db.all(`SELECT d.id, d.name, d.price_aed,
               (SELECT COUNT(*) FROM dish_likes WHERE dish_id = d.id) AS likes
-       FROM dishes d WHERE d.restaurant_id = ? ORDER BY likes DESC, d.id ASC`
-    )
-    .all(r.id);
+       FROM dishes d WHERE d.restaurant_id = ? ORDER BY likes DESC, d.id ASC`, r.id);
 
-  const reviewStats = db
-    .prepare(
-      `SELECT COUNT(*) AS count, AVG(stars) AS avg_stars FROM reviews WHERE restaurant_id = ?`
-    )
-    .get(r.id);
+  const reviewStats = await db.get(`SELECT COUNT(*) AS count, AVG(stars) AS avg_stars FROM reviews WHERE restaurant_id = ?`, r.id);
 
   const shuttleStop = r.nearest_shuttle_stop_id
-    ? db.prepare('SELECT * FROM shuttle_stops WHERE id = ?').get(r.nearest_shuttle_stop_id)
+    ? await db.get('SELECT * FROM shuttle_stops WHERE id = ?', r.nearest_shuttle_stop_id)
     : null;
   const walkMeters = shuttleStop
     ? nearestStop(r.lat, r.lng, [shuttleStop])?.distance_m ?? null
@@ -41,7 +33,7 @@ function decorateRestaurant(r) {
   };
 }
 
-router.get('/', optionalAuth, (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   const { cuisine, maxPrice, happyHour, q, verifiedOnly } = req.query;
   let sql = 'SELECT * FROM restaurants WHERE 1=1';
   const params = [];
@@ -67,32 +59,28 @@ router.get('/', optionalAuth, (req, res) => {
   }
   sql += ' ORDER BY name ASC';
 
-  const rows = db.prepare(sql).all(...params);
-  res.json({ restaurants: rows.map(decorateRestaurant) });
+  const rows = await db.all(sql, ...params);
+  res.json({ restaurants: await Promise.all(rows.map(decorateRestaurant)) });
 });
 
-router.get('/cuisines', (_req, res) => {
-  const rows = db.prepare('SELECT DISTINCT cuisine FROM restaurants ORDER BY cuisine ASC').all();
+router.get('/cuisines', async (_req, res) => {
+  const rows = await db.all('SELECT DISTINCT cuisine FROM restaurants ORDER BY cuisine ASC');
   res.json({ cuisines: rows.map((r) => r.cuisine) });
 });
 
-router.get('/:id', (req, res) => {
-  const r = db.prepare('SELECT * FROM restaurants WHERE id = ?').get(req.params.id);
+router.get('/:id', async (req, res) => {
+  const r = await db.get('SELECT * FROM restaurants WHERE id = ?', req.params.id);
   if (!r) return res.status(404).json({ error: 'Restaurant not found.' });
 
-  const reviews = db
-    .prepare(
-      `SELECT reviews.id, reviews.stars, reviews.nyuad_phrase, reviews.text, reviews.created_at,
+  const reviews = await db.all(`SELECT reviews.id, reviews.stars, reviews.nyuad_phrase, reviews.text, reviews.created_at,
               users.name AS author_name
        FROM reviews JOIN users ON users.id = reviews.user_id
-       WHERE restaurant_id = ? ORDER BY reviews.created_at DESC`
-    )
-    .all(req.params.id);
+       WHERE restaurant_id = ? ORDER BY reviews.created_at DESC`, req.params.id);
 
-  res.json({ restaurant: decorateRestaurant(r), reviews });
+  res.json({ restaurant: await decorateRestaurant(r), reviews });
 });
 
-router.post('/', requireAuth, requireVerified, (req, res) => {
+router.post('/', requireAuth, requireVerified, async (req, res) => {
   const { name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info } =
     req.body || {};
 
@@ -102,16 +90,12 @@ router.post('/', requireAuth, requireVerified, (req, res) => {
       .json({ error: 'name, cuisine, lat, lng, and avg_meal_price_aed are required.' });
   }
 
-  const stops = db.prepare('SELECT * FROM shuttle_stops').all();
+  const stops = await db.all('SELECT * FROM shuttle_stops');
   const closest = stops.length ? nearestStop(Number(lat), Number(lng), stops) : null;
 
-  const info = db
-    .prepare(
-      `INSERT INTO restaurants
+  const info = await db.run(`INSERT INTO restaurants
         (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, nearest_shuttle_stop_id, submitted_by, verified)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
-    )
-    .run(
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`, 
       name,
       cuisine,
       neighborhood || null,
@@ -125,8 +109,8 @@ router.post('/', requireAuth, requireVerified, (req, res) => {
       req.user.id
     );
 
-  const created = db.prepare('SELECT * FROM restaurants WHERE id = ?').get(info.lastInsertRowid);
-  res.status(201).json({ restaurant: decorateRestaurant(created) });
+  const created = await db.get('SELECT * FROM restaurants WHERE id = ?', info.lastInsertRowid);
+  res.status(201).json({ restaurant: await decorateRestaurant(created) });
 });
 
 export default router;
