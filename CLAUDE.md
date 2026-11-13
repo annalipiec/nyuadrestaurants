@@ -182,6 +182,9 @@ than hardcoding `44px` in component styles.
 - Vercel env vars required: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `JWT_SECRET`. Without the Turso
   vars the function would try to write a local SQLite file, which doesn't persist on Vercel.
 - A brand-new Turso DB auto-seeds on the first API request (see `ready()` above).
+- Live: https://ad-bites.vercel.app — Vercel project `ad-bites` (team `anna-d6f0`). The Turso DB
+  (`ad-bites-db`) was provisioned through the Vercel Marketplace, which injects the `TURSO_*` env vars;
+  `vercel env pull` writes them to the root `.env.local` (gitignored). Deploy with `vercel deploy --prod`.
 
 ## Commands
 

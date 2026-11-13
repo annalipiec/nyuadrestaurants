@@ -13,3 +13,5 @@ server/.env
 *.log
 
 .vercel/
+.vercel
+.env*
