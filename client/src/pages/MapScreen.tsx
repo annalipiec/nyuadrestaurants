@@ -53,11 +53,7 @@ export default function MapScreen() {
               <Polyline
                 key={route.key}
                 positions={route.path}
-                pathOptions={
-                  route.follows_roads
-                    ? { color: route.color, weight: 4, opacity: 0.7 }
-                    : { color: route.color, weight: 4, opacity: 0.75, dashArray: '1 8' }
-                }
+                pathOptions={{ color: route.color, weight: 4, opacity: 0.7 }}
               />
             ))}
 

@@ -119,7 +119,7 @@ return [
     cuisine: 'Jamaican',
     neighborhood: null,
     address: null,
-    lat: 24.545171331879025, lng: 54.424123762281994,
+    lat: 24.539399454306654, lng: 54.41244691867828,
     avg_meal_price_aed: 50,
     description: null,
     happy_hour_info: 'Happy hours menu, Mon–Fri 12–7 PM.',

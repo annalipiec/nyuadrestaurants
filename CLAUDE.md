@@ -127,13 +127,13 @@ nav), dimmed backdrop behind, the tab still fully mounted and interactive-state-
   `npm run shuttle-paths` (`server/scripts/build-shuttle-paths.mjs`) from OSRM driving routes through
   each route's mapped stops in order, then simplified. **Re-run it and commit the JSON whenever a
   route's stops or a stop's coordinates change** — the API compares the stored `waypoints` and falls
-  back to straight dotted lines for any route whose stops no longer match (`follows_roads: false`).
+  back to straight lines for any route whose stops no longer match (`follows_roads: false`).
   The path is a driving approximation, not the bus's GPS track. The DB `shuttle_routes` table is
   legacy and unused.
 - Time logic is `client/src/utils/shuttleTimes.ts` (Abu Dhabi time via `Intl`, `stopSummary()` = next
   bus from campus + last bus back). Used by the map stop popups, the restaurant detail screen (under
   the getting-there card) and `/shuttles` (`ShuttleScheduleScreen`, standalone route, no bottom nav).
-- `MapScreen.tsx` renders routes as dashed `Polyline`s (skipping routes with no mapped stops) and stops as a distinct marker
+- `MapScreen.tsx` renders routes as solid `Polyline`s (skipping routes with no mapped stops) and stops as a distinct marker
   (`shuttleStopIcon.ts`, white circle + bus glyph) behind a checkbox toggle, bottom-left. Restaurant
   pins (`restaurantMarkerIcon.ts`) render after them so they sit visually on top. Leaflet's popup
   bubble is themed via `.map-screen .leaflet-popup-content-wrapper` (it's hard-coded white otherwise,
