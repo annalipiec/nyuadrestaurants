@@ -188,6 +188,34 @@
   color: var(--color-text-muted);
 }
 
+/* ---- Shuttle times (under the getting-there card) ---- */
+
+.shuttle-times {
+  margin-top: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.shuttle-times__line {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+.shuttle-times__line strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.shuttle-times__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target-min);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
 /* ---- Happy hours ---- */
 
 .happy-hours-bar {

@@ -60,10 +60,27 @@ export type User = {
   email_verified: boolean
 }
 
+/** A stop in a route's timetable. stop_id/lat/lng are null when we don't have its location yet. */
+export type ShuttleRouteStop = {
+  label: string
+  stop_id: number | null
+  is_campus: boolean
+  lat: number | null
+  lng: number | null
+}
+
+/**
+ * A shuttle route and its timetable (server/src/data/shuttleSchedule.js). Each trip lists times in
+ * the printed table's column order — DEP stop0, ARR stop1, DEP stop1, …, ARR lastStop — with null
+ * for "–". See utils/shuttleTimes.ts for reading them.
+ */
 export type ShuttleRoute = {
-  id: number
+  key: string
   name: string
   color: string
+  service: string
+  stops: ShuttleRouteStop[]
+  trips: (string | null)[][]
   path: [number, number][]
 }
 
@@ -72,5 +89,11 @@ export type RawShuttleStop = {
   name: string
   lat: number
   lng: number
-  route_id: number | null
+}
+
+export type ShuttleSchedule = {
+  info: { effective: string; notice: string; advisory: string; seating: string }
+  stops: RawShuttleStop[]
+  routes: ShuttleRoute[]
+  other_services: { name: string; when: string; destination: string; returns: string }[]
 }

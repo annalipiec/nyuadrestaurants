@@ -10,19 +10,11 @@
 import bcrypt from 'bcryptjs';
 import { pathToFileURL } from 'url';
 import db, { ready } from './index.js';
+import { REAL_STOPS } from '../data/shuttleSchedule.js';
 
-// Real NYUAD shuttle stops, confirmed by the team (coordinates given directly, not
-// approximated). One straight-line route per stop from campus — a simple, honest
-// starting point rather than pretending to trace the actual road the shuttle drives,
-// since we don't have real waypoint/GPS data for the roads themselves yet.
-const NYUAD_CAMPUS = [24.5335, 54.438];
-const REAL_STOPS = [
-  { key: 'wtc', name: 'WTC stop', lat: 24.488711817967236, lng: 54.356473283742844 },
-  { key: 'alWahda', name: 'Al Wahda stop', lat: 24.471688247027856, lng: 54.37297630832414 },
-  { key: 'mamsha', name: 'Mamsha stop', lat: 24.538358148499473, lng: 54.41029684004894 },
-  { key: 'galleria', name: 'Galleria Mall stop', lat: 24.501385508814867, lng: 54.38982096701346 },
-  { key: 'louvre', name: 'Louvre stop', lat: 24.532504123520646, lng: 54.401687247219705 },
-];
+// Real NYUAD shuttle stops (confirmed coordinates) live in ../data/shuttleSchedule.js, next to
+// the timetable that references them.
+
 
 function buildRestaurants(stops) {
 return [
@@ -187,29 +179,18 @@ async function ensureSeedUser(tx) {
   ).lastInsertRowid;
 }
 
-// Inserts the real shuttle stops/routes, skipping any that already exist by name —
-// safe to call against a database that already has some or all of them.
+// Inserts the real shuttle stops, skipping any that already exist by name — safe to call
+// against a database that already has some or all of them. Routes/times are not stored in the
+// DB: GET /api/shuttles serves them from ../data/shuttleSchedule.js.
 async function ensureRealStops(tx) {
-  const insertRoute = async (name, color, path) =>
-    (await tx.run(`INSERT INTO shuttle_routes (name, color, path_json) VALUES (?, ?, ?)`, name, color, JSON.stringify(path)))
-      .lastInsertRowid;
-  const insertStop = async (name, lat, lng, routeId) =>
-    (await tx.run(`INSERT INTO shuttle_stops (name, lat, lng, route_id) VALUES (?, ?, ?, ?)`, name, lat, lng, routeId))
-      .lastInsertRowid;
-
   const realStops = {};
   for (const stop of REAL_STOPS) {
     const existing = await tx.get('SELECT id FROM shuttle_stops WHERE name = ?', stop.name);
-    if (existing) {
-      realStops[stop.key] = existing.id;
-      continue;
-    }
-    const routeId = await insertRoute(
-      `Campus ↔ ${stop.name} (straight-line, confirm real route later)`,
-      '#57068C',
-      [NYUAD_CAMPUS, [stop.lat, stop.lng]]
-    );
-    realStops[stop.key] = await insertStop(stop.name, stop.lat, stop.lng, routeId);
+    realStops[stop.key] =
+      existing?.id ??
+      (
+        await tx.run('INSERT INTO shuttle_stops (name, lat, lng, route_id) VALUES (?, ?, ?, NULL)', stop.name, stop.lat, stop.lng)
+      ).lastInsertRowid;
   }
   return realStops;
 }

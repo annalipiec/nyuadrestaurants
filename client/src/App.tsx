@@ -9,6 +9,7 @@ import RestaurantDetailScreen from './pages/RestaurantDetailScreen'
 import LoginScreen from './pages/LoginScreen'
 import SignupScreen from './pages/SignupScreen'
 import VerifyEmailScreen from './pages/VerifyEmailScreen'
+import ShuttleScheduleScreen from './pages/ShuttleScheduleScreen'
 import DetailOverlay from './components/DetailOverlay'
 
 type BackgroundLocationState = { backgroundLocation?: Location }
@@ -46,6 +47,7 @@ function App() {
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/signup" element={<SignupScreen />} />
         <Route path="/verify-email" element={<VerifyEmailScreen />} />
+        <Route path="/shuttles" element={<ShuttleScheduleScreen />} />
       </Routes>
 
       {backgroundLocation && (

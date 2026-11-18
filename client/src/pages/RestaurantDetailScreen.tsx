@@ -12,6 +12,9 @@ import {
 } from '../components/icons'
 import { addReview, getRestaurant, likeDish, listPhrases } from '../api/restaurants'
 import { apiErrorMessage } from '../api/client'
+import { getShuttles } from '../api/shuttles'
+import type { ShuttleRoute } from '../api/types'
+import { stopSummary } from '../utils/shuttleTimes'
 import type { Dish, Restaurant, Review } from '../api/types'
 import { useAuth } from '../context/AuthContext'
 import { useSaved } from '../context/SavedContext'
@@ -24,6 +27,49 @@ function directionsUrl(restaurant: Restaurant) {
     return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`
   }
   return `https://www.google.com/maps/search/?api=1&query=${destination}`
+}
+
+/**
+ * Next shuttle from campus to this restaurant's stop and the last one back, from the timetable
+ * (server/src/data/shuttleSchedule.js). Renders nothing if no listed route serves the stop.
+ */
+function ShuttleTimes({ stopId }: { stopId: number }) {
+  const [routes, setRoutes] = useState<ShuttleRoute[] | null>(null)
+
+  useEffect(() => {
+    getShuttles()
+      .then((s) => setRoutes(s.routes))
+      .catch(() => setRoutes([]))
+  }, [])
+
+  const summary = routes ? stopSummary(routes, stopId) : null
+  if (!summary) return null
+
+  return (
+    <div className="shuttle-times">
+      <p className="shuttle-times__line">
+        {summary.next ? (
+          <>
+            Next shuttle: <strong>{summary.next.leave}</strong> from campus, arrives {summary.next.arrive}
+          </>
+        ) : summary.firstTomorrow ? (
+          <>
+            No more shuttles today. First tomorrow: <strong>{summary.firstTomorrow.leave}</strong> from campus
+          </>
+        ) : null}
+      </p>
+      {summary.lastBack && (
+        <p className="shuttle-times__line">
+          {summary.lastBackGone ? 'Last shuttle back left at ' : 'Last shuttle back: '}
+          <strong>{summary.lastBack.leave}</strong>
+          {!summary.lastBackGone && ` (on campus ${summary.lastBack.arrive})`}
+        </p>
+      )}
+      <Link to="/shuttles" className="shuttle-times__link">
+        Full shuttle timetable
+      </Link>
+    </div>
+  )
 }
 
 type DishWithLikeState = Dish & { liked: boolean }
@@ -244,6 +290,7 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
             </span>
           </button>
         )}
+        {restaurant.nearest_shuttle_stop && <ShuttleTimes stopId={restaurant.nearest_shuttle_stop.id} />}
 
         {restaurant.happy_hour_info && (
           <div className="happy-hours-bar">

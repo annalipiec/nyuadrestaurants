@@ -1,0 +1,141 @@
+.shuttle-screen {
+  min-height: 100%;
+  padding: 1rem 1rem 2rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.shuttle-screen__top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.shuttle-screen__back {
+  flex-shrink: 0;
+  width: var(--tap-target-min);
+  height: var(--tap-target-min);
+  border-radius: 999px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-card);
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.shuttle-screen__title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.shuttle-screen__state {
+  color: var(--color-text-muted);
+}
+
+.shuttle-screen__notice {
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  background-color: var(--color-card);
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.shuttle-screen__notice p {
+  margin: 0;
+}
+
+.shuttle-screen__notice p + p {
+  margin-top: 0.3rem;
+}
+
+.shuttle-route {
+  margin-top: 1.4rem;
+}
+
+.shuttle-route__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.shuttle-route__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.shuttle-route__name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.shuttle-route__service {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+/* Wide tables scroll inside their own box, never the page. */
+.shuttle-route__scroll {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+}
+
+.shuttle-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.shuttle-table th {
+  position: sticky;
+  top: 0;
+  padding: 0.5rem 0.6rem;
+  background-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.shuttle-table td {
+  padding: 0.45rem 0.6rem;
+  border-top: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.shuttle-table__row--past td {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.shuttle-table__row--next td {
+  background-color: var(--color-card);
+  color: var(--color-accent);
+  font-weight: 800;
+}
+
+.shuttle-other {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.shuttle-other__kind {
+  color: var(--color-text-muted);
+}

@@ -111,13 +111,27 @@ nav), dimmed backdrop behind, the tab still fully mounted and interactive-state-
   that's what "Add a restaurant"/dish/review in the app is for once students start using it. Galleria
   Mall and Louvre stops are seeded but currently unused by any restaurant (none of the 10 are near
   them yet) — that's expected, not a bug.
-- Each real stop's route is a **straight line from NYUAD campus to that stop** — not the actual road
-  the shuttle drives. This was an explicit simplification (no real route waypoint/GPS data available)
-  rather than a bug; if real route data shows up later, replace the `path` in `shuttle_routes` rather
-  than adding a parallel system.
-- `MapScreen.tsx` renders routes as dashed `Polyline`s and stops as a distinct marker
+- **Shuttle routes + timetable live in `server/src/data/shuttleSchedule.js`, not the DB.** It holds
+  `REAL_STOPS` (the 5 stops with confirmed coordinates; seed.js inserts them), the 4 routes from NYUAD's
+  printed schedule (effective Oct 7, 2026) with every trip's times in the printed column order
+  (`DEP stop0, ARR stop1, DEP stop1, …, ARR last`; `null` = "–"), and the weekly religious services.
+  New semester's schedule → edit that file and push; no DB change. "Central Souk" on the schedule
+  is the `WTC stop`. `GET /api/shuttles` serves it with DB stop ids attached and hides routes outside
+  their `validFrom`/`validUntil` (Abu Dhabi date).
+- Timetable stops with `stop: null` (Spinneys St. Regis, Yas Mall, Miza HQ, Corniche, Marina Mall,
+  Harley St.) have **no coordinates yet** — they show in the timetable but not on the map. To map
+  one, add it to `REAL_STOPS` (a new seed row; run `npm run resync` on an existing DB) and set its key.
+- Map lines are straight segments between a route's stops in order (campus → stops → campus) — the
+  stop order is real, the road path isn't. The DB `shuttle_routes` table is legacy and unused.
+- Time logic is `client/src/utils/shuttleTimes.ts` (Abu Dhabi time via `Intl`, `stopSummary()` = next
+  bus from campus + last bus back). Used by the map stop popups, the restaurant detail screen (under
+  the getting-there card) and `/shuttles` (`ShuttleScheduleScreen`, standalone route, no bottom nav).
+- `MapScreen.tsx` renders routes as dashed `Polyline`s (skipping routes with no mapped stops) and stops as a distinct marker
   (`shuttleStopIcon.ts`, white circle + bus glyph) behind a checkbox toggle, bottom-left. Restaurant
-  pins (`restaurantMarkerIcon.ts`) render after them so they sit visually on top.
+  pins (`restaurantMarkerIcon.ts`) render after them so they sit visually on top. Leaflet's popup
+  bubble is themed via `.map-screen .leaflet-popup-content-wrapper` (it's hard-coded white otherwise,
+  which made popup text invisible in dark mode), and popup text classes are prefixed with
+  `.leaflet-popup-content` to beat Leaflet's own `p`/`a` styles.
 - **Gotcha that already happened once**: a long `TileLayer` `attribution` string wraps onto 2+ lines
   on a phone-width viewport, and Leaflet's attribution control (`z-index: 1000` by default) then
   physically overlaps and intercepts clicks on anything positioned near the bottom of the map (caught

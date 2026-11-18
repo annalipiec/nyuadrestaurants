@@ -5,6 +5,7 @@ import './MapScreen.css'
 import { listRestaurants } from '../api/restaurants'
 import { getShuttles } from '../api/shuttles'
 import type { RawShuttleStop, Restaurant, ShuttleRoute } from '../api/types'
+import { stopSummary } from '../utils/shuttleTimes'
 import { restaurantMarkerIcon } from '../components/restaurantMarkerIcon'
 import { shuttleStopIcon } from '../components/shuttleStopIcon'
 
@@ -44,24 +45,21 @@ export default function MapScreen() {
         />
 
         {showShuttles &&
-          routes.map((route) => (
-            <Polyline
-              key={route.id}
-              positions={route.path}
-              pathOptions={{ color: route.color, weight: 4, opacity: 0.75, dashArray: '1 8' }}
-            />
-          ))}
+          routes
+            .filter((route) => route.path.length > 1)
+            .map((route) => (
+              <Polyline
+                key={route.key}
+                positions={route.path}
+                pathOptions={{ color: route.color, weight: 4, opacity: 0.75, dashArray: '1 8' }}
+              />
+            ))}
 
         {showShuttles &&
           stops.map((stop) => (
             <Marker key={`stop-${stop.id}`} position={[stop.lat, stop.lng]} icon={shuttleStopIcon()}>
               <Popup>
-                <div className="map-popup">
-                  <p className="map-popup__name">{stop.name}</p>
-                  <p className="map-popup__meta" style={{ marginBottom: 0 }}>
-                    Shuttle stop
-                  </p>
-                </div>
+                <StopPopup stop={stop} routes={routes} />
               </Popup>
             </Marker>
           ))}
@@ -97,14 +95,54 @@ export default function MapScreen() {
       {/* Bottom-left: clear of Leaflet's top-left zoom control and the
           top-right brand badge, and clear of the bottom nav (a flex sibling
           of map-screen, not an overlay on top of it). */}
-      <label className="map-screen__toggle">
-        <input
-          type="checkbox"
-          checked={showShuttles}
-          onChange={(e) => setShowShuttles(e.target.checked)}
-        />
-        Shuttle routes
-      </label>
+      <div className="map-screen__controls">
+        <label className="map-screen__toggle">
+          <input
+            type="checkbox"
+            checked={showShuttles}
+            onChange={(e) => setShowShuttles(e.target.checked)}
+          />
+          Shuttle routes
+        </label>
+        <Link to="/shuttles" className="map-screen__timetable-link">
+          Timetable
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+/** Popup for a shuttle stop: which routes serve it, the next bus from campus, the last one back. */
+function StopPopup({ stop, routes }: { stop: RawShuttleStop; routes: ShuttleRoute[] }) {
+  const summary = stopSummary(routes, stop.id)
+  const label =
+    summary?.routes[0]?.stops.find((s) => s.stop_id === stop.id)?.label ?? stop.name
+  return (
+    <div className="map-popup">
+      <p className="map-popup__name">{label}</p>
+      {summary ? (
+        <>
+          <p className="map-popup__meta">{summary.routes.map((r) => r.name).join(' · ')}</p>
+          <p className="map-popup__line">
+            {summary.next
+              ? `Next from campus: ${summary.next.leave} (arrives ${summary.next.arrive})`
+              : summary.firstTomorrow
+                ? `No more buses from campus today — first tomorrow ${summary.firstTomorrow.leave}`
+                : 'No buses from campus to this stop'}
+          </p>
+          {summary.lastBack && (
+            <p className="map-popup__line">
+              {summary.lastBackGone ? 'Last bus back left at ' : 'Last bus back: '}
+              {summary.lastBack.leave}
+            </p>
+          )}
+        </>
+      ) : (
+        <p className="map-popup__meta">Shuttle stop</p>
+      )}
+      <Link to="/shuttles" className="map-popup__link">
+        Full timetable
+      </Link>
     </div>
   )
 }
