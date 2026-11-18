@@ -1,5 +1,5 @@
 import api from './client'
-import type { Dish, Restaurant, Review } from './types'
+import type { Dish, MySuggestion, Restaurant, Review } from './types'
 
 export type RestaurantFilters = {
   q?: string
@@ -55,4 +55,26 @@ export async function addReview(
 export async function listPhrases() {
   const { data } = await api.get<{ phrases: string[] }>('/phrases')
   return data.phrases
+}
+
+export type RestaurantSuggestion = {
+  name: string
+  cuisine: string
+  lat: number
+  lng: number
+  avg_meal_price_aed: number
+  getting_there_note?: string | null
+  happy_hour_info?: string | null
+  description?: string | null
+}
+
+/** Students' suggestions stay hidden until approved; admins' go live immediately (check `verified`). */
+export async function suggestRestaurant(payload: RestaurantSuggestion) {
+  const { data } = await api.post<{ restaurant: Restaurant }>('/restaurants', payload)
+  return data.restaurant
+}
+
+export async function listMySuggestions() {
+  const { data } = await api.get<{ restaurants: MySuggestion[] }>('/restaurants/mine')
+  return data.restaurants
 }

@@ -6,6 +6,7 @@
 // on Vercel that fallback is disabled, so a missing config fails loudly instead of leaking codes.
 import nodemailer from 'nodemailer';
 import { VERIFICATION_EXPIRY_MINUTES } from '../constants.js';
+import { adminEmails } from './admin.js';
 
 export function emailConfigured() {
   return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
@@ -61,6 +62,22 @@ export async function sendVerificationEmail({ to, name, code }) {
         <p style="color: #4e057e; font-size: 13px;">If you didn't sign up for AD Bites, you can ignore this email.</p>
       </div>`,
   });
+}
+
+// Plain-text heads-up to every ADMIN_EMAILS address. Never throws: a failed notification
+// shouldn't fail the request that triggered it.
+export async function notifyAdmins(subject, text) {
+  const to = adminEmails();
+  if (!emailConfigured() || to.length === 0) {
+    if (to.length) console.log(`[DEV] Admin notification (${to.join(', ')}): ${subject}\n${text}`);
+    return;
+  }
+  try {
+    const from = process.env.EMAIL_FROM || `"AD Bites" <${process.env.SMTP_USER}>`;
+    await getTransporter().sendMail({ from, to, subject, text });
+  } catch (err) {
+    console.error('Failed to notify admins:', err);
+  }
 }
 
 function escapeHtml(s) {

@@ -58,6 +58,8 @@ export type User = {
   name: string
   class_year: number | null
   email_verified: boolean
+  /** On the AD Bites team (server ADMIN_EMAILS): can approve restaurant suggestions. */
+  is_admin: boolean
 }
 
 /** A stop in a route's timetable. stop_id/lat/lng are null when we don't have its location yet. */
@@ -101,4 +103,32 @@ export type ShuttleSchedule = {
   stops: RawShuttleStop[]
   routes: ShuttleRoute[]
   other_services: { name: string; when: string; destination: string; returns: string }[]
+}
+
+/** One of the current user's restaurant suggestions (Profile → Your suggestions). */
+export type MySuggestion = {
+  id: number
+  name: string
+  cuisine: string
+  /** false = waiting for team approval */
+  verified: boolean
+  created_at: string
+}
+
+/** A suggestion waiting for approval, as the admin review screen sees it. */
+export type PendingRestaurant = {
+  id: number
+  name: string
+  cuisine: string
+  lat: number
+  lng: number
+  avg_meal_price_aed: number
+  description: string | null
+  happy_hour_info: string | null
+  getting_there_note: string | null
+  created_at: string
+  nearest_stop_name: string | null
+  submitted_by_name: string | null
+  submitted_by_email: string | null
+  price_tier: PriceTier
 }

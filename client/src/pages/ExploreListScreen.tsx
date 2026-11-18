@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import './RestaurantList.css'
 import { listRestaurants } from '../api/restaurants'
 import type { Restaurant } from '../api/types'
@@ -43,6 +43,13 @@ export default function ExploreListScreen() {
       {restaurants.map((r) => (
         <RestaurantRow key={r.id} restaurant={r} backgroundLocation={location} />
       ))}
+
+      <p className="restaurant-list-screen__suggest">
+        Missing a spot?{' '}
+        <Link to="/suggest" className="restaurant-list-screen__suggest-link">
+          Suggest a restaurant
+        </Link>
+      </p>
     </div>
   )
 }

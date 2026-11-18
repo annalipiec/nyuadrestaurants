@@ -94,3 +94,18 @@
   font-size: 0.8rem;
   color: var(--color-text-muted);
 }
+
+.restaurant-list-screen__suggest {
+  margin: 1.25rem 0 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.restaurant-list-screen__suggest-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target-min);
+  font-weight: 700;
+  color: var(--color-accent);
+}

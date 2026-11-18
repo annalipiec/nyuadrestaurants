@@ -10,7 +10,10 @@ router.get('/phrases', async (_req, res) => {
 });
 
 router.post('/restaurants/:restaurantId/reviews', requireAuth, requireVerified, async (req, res) => {
-  const restaurant = await db.get('SELECT id FROM restaurants WHERE id = ?', req.params.restaurantId);
+  const restaurant = await db.get(
+    'SELECT id FROM restaurants WHERE id = ? AND verified = 1',
+    req.params.restaurantId
+  );
   if (!restaurant) return res.status(404).json({ error: 'Restaurant not found.' });
 
   const { stars, nyuad_phrase, text } = req.body || {};

@@ -5,7 +5,10 @@ import { requireAuth, requireVerified } from '../middleware/auth.js';
 const router = Router();
 
 router.post('/restaurants/:restaurantId/dishes', requireAuth, requireVerified, async (req, res) => {
-  const restaurant = await db.get('SELECT id FROM restaurants WHERE id = ?', req.params.restaurantId);
+  const restaurant = await db.get(
+    'SELECT id FROM restaurants WHERE id = ? AND verified = 1',
+    req.params.restaurantId
+  );
   if (!restaurant) return res.status(404).json({ error: 'Restaurant not found.' });
 
   const name = String(req.body?.name ?? '').trim().replace(/\s+/g, ' ');

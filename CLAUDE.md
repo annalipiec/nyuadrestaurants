@@ -41,6 +41,15 @@ server/   Express + SQLite API from an earlier iteration of this project
 - Dishes: "Add a dish" on the restaurant detail screen (`AddDishForm`, same login + verified-email
   gate as tips) → `POST /api/restaurants/:id/dishes`. Server trims/collapses the name (≤80 chars),
   price optional 0–1000 AED, and rejects case-insensitive duplicates per restaurant with 409.
+- Restaurant suggestions: verified students submit via `/suggest` (`SuggestRestaurantScreen`, tap-to-pin
+  `LocationPicker` map or pasted coordinates) → `POST /api/restaurants`, stored with `verified = 0`.
+  **Unverified restaurants are hidden everywhere** (list, cuisines, detail, posting dishes/tips) except
+  to their submitter (`GET /api/restaurants/mine`, shown on Profile) and admins. Admins = emails in the
+  `ADMIN_EMAILS` env var (comma-separated; `server/src/utils/admin.js`, `user.is_admin`); they get an
+  email per suggestion and approve/reject at `/admin` (`AdminScreen`, `server/src/routes/admin.js` —
+  reject deletes, and only pending rows can be deleted). Admins' own submissions go live immediately.
+  Server validation: Abu Dhabi bounding box, price 1–1000, case-insensitive duplicate names → 409,
+  max 5 pending per student.
 - **Known gap**: liking a dish calls `POST /api/dishes/:id/like`, but `GET /api/restaurants/:id`
   doesn't return whether *this* user already liked each dish — so the heart always starts unfilled
   client-side, even if you'd liked it in a previous session. Fix requires a server change (join against
@@ -234,7 +243,8 @@ than hardcoding `44px` in component styles.
   for local dev). Everything else falls back to `/index.html` for client-side routing.
 - The root `package.json` exists only to mark `api/index.js` as ESM and pin Node; it has no deps.
 - Vercel env vars required: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `JWT_SECRET`, `SMTP_USER`,
-  `SMTP_PASS` (Gmail address + Google app password; see `server/src/utils/email.js`). Without the Turso
+  `SMTP_PASS` (Gmail address + Google app password; see `server/src/utils/email.js`), and
+  `ADMIN_EMAILS` (who can approve restaurant suggestions; without it nobody can). Without the Turso
   vars the function would try to write a local SQLite file, which doesn't persist on Vercel.
 - A brand-new Turso DB auto-seeds on the first API request (see `ready()` above).
 - Live: https://ad-bites.vercel.app — Vercel project `ad-bites` (team `anna-d6f0`). The Turso DB

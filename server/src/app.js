@@ -9,6 +9,7 @@ import restaurantRoutes from './routes/restaurants.js';
 import dishRoutes from './routes/dishes.js';
 import reviewRoutes from './routes/reviews.js';
 import shuttleRoutes from './routes/shuttles.js';
+import adminRoutes from './routes/admin.js';
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.use('/api/restaurants', restaurantRoutes);
 app.use('/api', dishRoutes);
 app.use('/api', reviewRoutes);
 app.use('/api/shuttles', shuttleRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

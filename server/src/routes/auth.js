@@ -9,6 +9,7 @@ import {
   VERIFICATION_RESEND_COOLDOWN_SECONDS,
 } from '../constants.js';
 import { devCodeFallback, sendVerificationEmail } from '../utils/email.js';
+import { isAdminEmail } from '../utils/admin.js';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ function publicUser(user) {
     name: user.name,
     class_year: user.class_year,
     email_verified: !!user.email_verified,
+    is_admin: isAdminEmail(user.email),
   };
 }
 
