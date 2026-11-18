@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import './RestaurantDetailScreen.css'
 import MapHeaderGraphic from '../components/MapHeaderGraphic'
@@ -70,6 +70,22 @@ function ShuttleTimes({ stopId }: { stopId: number }) {
       </Link>
     </div>
   )
+}
+
+/**
+ * A restaurant's tags = vibe tags from its tips, most-picked first (ties: first used first) — the
+ * same ordering as the server's `top_tags`, but computed from the loaded tips so a new tip's tag
+ * shows up immediately. Capped at 5.
+ */
+function tagCounts(reviews: Review[]) {
+  const counts = new Map<string, number>()
+  for (const r of [...reviews].reverse()) {
+    if (r.nyuad_phrase) counts.set(r.nyuad_phrase, (counts.get(r.nyuad_phrase) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
 }
 
 type DishWithLikeState = Dish & { liked: boolean }
@@ -221,6 +237,7 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [showTipForm, setShowTipForm] = useState(false)
+  const communityRef = useRef<HTMLElement>(null)
   const [showDishForm, setShowDishForm] = useState(false)
 
   useEffect(() => {
@@ -254,6 +271,12 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
     } else {
       navigator.clipboard?.writeText(window.location.href)
     }
+  }
+
+  // "+ Add a tag": tags come from tips, so open the tip form and bring it into view.
+  function startTagging() {
+    setShowTipForm(true)
+    requestAnimationFrame(() => communityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
   function handleReviewAdded(review: Review) {
@@ -313,6 +336,17 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
             <p className="detail-screen__cuisine">
               {[restaurant.cuisine, restaurant.neighborhood].filter(Boolean).join(' · ')}
             </p>
+            <div className="detail-tags">
+              {tagCounts(reviews).map(({ tag, count }) => (
+                <span key={tag} className="detail-tags__tag">
+                  {tag}
+                  {count > 1 && <span className="detail-tags__count"> · {count}</span>}
+                </span>
+              ))}
+              <button type="button" className="detail-tags__add" onClick={startTagging}>
+                + Add a tag
+              </button>
+            </div>
           </div>
           <button
             type="button"
@@ -412,7 +446,7 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
           </div>
         </section>
 
-        <section className="detail-screen__section">
+        <section className="detail-screen__section" ref={communityRef}>
           <div className="detail-screen__section-header">
             <h2 className="detail-screen__section-title">From the community</h2>
             {!showTipForm && (

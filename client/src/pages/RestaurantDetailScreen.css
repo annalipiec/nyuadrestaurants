@@ -481,3 +481,39 @@
   font-size: 0.85rem;
   color: #c0315f;
 }
+
+/* ---- Restaurant tags (from tips' vibe tags) ---- */
+
+.detail-tags {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.detail-tags__tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background-color: var(--color-card);
+  color: var(--color-accent);
+}
+
+.detail-tags__count {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.detail-tags__add {
+  min-height: var(--tap-target-min);
+  padding: 0 0.4rem;
+  border: none;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  cursor: pointer;
+}

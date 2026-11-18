@@ -53,6 +53,10 @@ server/   Express + SQLite API from an earlier iteration of this project
 - Tip "vibe tags": `NYUAD_PHRASE_GROUPS` in `server/src/constants.js` (26 tags in 5 groups; `GET /api/phrases`
   returns `groups` + flat `phrases`), rendered as `<optgroup>`s in the tip form. The server rejects tags
   not in the list — keep the original 8 strings verbatim so older tips still match.
+- **Restaurant tags = the vibe tags from its tips** (no separate tag table). The API returns
+  `top_tags` (top 3 by count) per restaurant, shown as chips in `RestaurantRow`; the detail screen
+  computes up to 5 from its loaded tips (`tagCounts()`) so a new tip's tag appears instantly, and its
+  "+ Add a tag" button just opens the tip form. Explore search (`q`) also matches tags.
 - **Known gap**: liking a dish calls `POST /api/dishes/:id/like`, but `GET /api/restaurants/:id`
   doesn't return whether *this* user already liked each dish — so the heart always starts unfilled
   client-side, even if you'd liked it in a previous session. Fix requires a server change (join against

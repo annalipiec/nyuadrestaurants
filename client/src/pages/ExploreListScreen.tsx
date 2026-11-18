@@ -28,7 +28,7 @@ export default function ExploreListScreen() {
       <input
         className="restaurant-list-screen__search"
         type="text"
-        placeholder="Search restaurants, cuisines…"
+        placeholder="Search restaurants, cuisines, tags…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />

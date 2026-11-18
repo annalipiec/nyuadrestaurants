@@ -15,6 +15,17 @@ async function decorateRestaurant(r) {
 
   const reviewStats = await db.get(`SELECT COUNT(*) AS count, AVG(stars) AS avg_stars FROM reviews WHERE restaurant_id = ?`, r.id);
 
+  // A restaurant's tags = the vibe tags students pick most often in its tips.
+  const topTags = await db.all(
+    `SELECT nyuad_phrase AS tag, COUNT(*) AS count, MIN(id) AS first_id
+       FROM reviews
+      WHERE restaurant_id = ? AND nyuad_phrase IS NOT NULL
+      GROUP BY nyuad_phrase
+      ORDER BY count DESC, first_id ASC
+      LIMIT 3`,
+    r.id
+  );
+
   const shuttleStop = r.nearest_shuttle_stop_id
     ? await db.get('SELECT * FROM shuttle_stops WHERE id = ?', r.nearest_shuttle_stop_id)
     : null;
@@ -28,6 +39,7 @@ async function decorateRestaurant(r) {
     price_tier: priceTierFor(r.avg_meal_price_aed),
     dishes,
     review_count: reviewStats.count,
+    top_tags: topTags.map(({ tag, count }) => ({ tag, count })),
     avg_stars: reviewStats.avg_stars ? Math.round(reviewStats.avg_stars * 10) / 10 : null,
     nearest_shuttle_stop: shuttleStop
       ? { id: shuttleStop.id, name: shuttleStop.name, lat: shuttleStop.lat, lng: shuttleStop.lng, distance_m: walkMeters }
@@ -53,9 +65,11 @@ router.get('/', optionalAuth, async (req, res) => {
     sql += ' AND happy_hour_info IS NOT NULL';
   }
   if (q) {
-    sql += ' AND (name LIKE ? OR cuisine LIKE ? OR neighborhood LIKE ?)';
+    // Also matches restaurants whose tips carry a matching vibe tag ("vegan", "date", "late-night"…).
+    sql += ` AND (name LIKE ? OR cuisine LIKE ? OR neighborhood LIKE ?
+             OR EXISTS (SELECT 1 FROM reviews WHERE reviews.restaurant_id = restaurants.id AND nyuad_phrase LIKE ?))`;
     const like = `%${q}%`;
-    params.push(like, like, like);
+    params.push(like, like, like, like);
   }
   sql += ' ORDER BY name ASC';
 

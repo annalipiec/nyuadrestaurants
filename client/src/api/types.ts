@@ -40,6 +40,8 @@ export type Restaurant = {
   dishes: Dish[]
   review_count: number
   avg_stars: number | null
+  /** Most-picked vibe tags from this restaurant's tips (up to 3, most popular first). */
+  top_tags: { tag: string; count: number }[]
   nearest_shuttle_stop: ShuttleStop | null
 }
 

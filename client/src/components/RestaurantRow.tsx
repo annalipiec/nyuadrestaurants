@@ -25,6 +25,15 @@ export default function RestaurantRow({
         </div>
         <span className="restaurant-row__tag">{restaurant.price_tier.label}</span>
       </div>
+      {restaurant.top_tags.length > 0 && (
+        <div className="restaurant-row__tags">
+          {restaurant.top_tags.slice(0, 2).map((t) => (
+            <span key={t.tag} className="restaurant-row__vibe">
+              {t.tag}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="restaurant-row__footer">
         {restaurant.avg_stars ? (
           <span>
