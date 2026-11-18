@@ -33,8 +33,12 @@ export default function RestaurantRow({
         ) : (
           <span>No reviews yet</span>
         )}
-        {restaurant.nearest_shuttle_stop && (
-          <span>🚌 {Math.round(restaurant.nearest_shuttle_stop.distance_m)}m away</span>
+        {restaurant.getting_there_note ? (
+          <span>🚌 {restaurant.getting_there_note}</span>
+        ) : (
+          restaurant.nearest_shuttle_stop && (
+            <span>🚌 {Math.round(restaurant.nearest_shuttle_stop.distance_m)}m away</span>
+          )
         )}
       </div>
     </Link>

@@ -32,6 +32,9 @@ export type Restaurant = {
   avg_meal_price_aed: number
   description: string | null
   happy_hour_info: string | null
+  /** A human-written transport note (e.g. "WTC stop + 10 min walk"), preferred over
+   *  nearest_shuttle_stop.distance_m (a straight-line estimate) when present. */
+  getting_there_note: string | null
   verified: boolean
   price_tier: PriceTier
   dishes: Dish[]

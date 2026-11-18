@@ -40,6 +40,10 @@ server/   Express + SQLite API from an earlier iteration of this project
   `nyuad_eats_saved_restaurant_ids`) — there is no backend endpoint for it, and `SavedScreen` works by
   fetching *all* restaurants and filtering client-side (no "get restaurants by id" endpoint exists).
   Don't assume saves sync across devices/browsers.
+- `restaurants.getting_there_note` (nullable TEXT) holds a human-written transport description (e.g.
+  "WTC stop + 10 min walk") — prefer this over the computed `nearest_shuttle_stop.distance_m`
+  (a straight-line haversine estimate) wherever both might be shown; see `RestaurantDetailScreen.tsx`'s
+  "Getting there" card and `RestaurantRow.tsx`'s footer for the pattern (`note || computed fallback`).
 
 ## Routing
 
@@ -48,6 +52,8 @@ server/   Express + SQLite API from an earlier iteration of this project
 routes outside that layout:
 
 - `/` — `MapScreen`: real Leaflet map + pins only, **no list** — this is the default landing tab.
+  Also renders the shuttle route/stop overlay (toggle checkbox, bottom-left) — see "Shuttle data"
+  below.
 - `/explore` — `ExploreListScreen`: search + list only, **no map**. Shares row rendering
   (`RestaurantRow.tsx`) and styles (`RestaurantList.css`) with `SavedScreen`.
 - `/saved` — `SavedScreen`: restaurants saved via `SavedContext`, same row component.
@@ -89,7 +95,26 @@ nav), dimmed backdrop behind, the tab still fully mounted and interactive-state-
 - If you add a new place that links to a restaurant, remember to pass `backgroundLocation` the same
   way, or it'll fall back to the full-page (non-overlay) render instead of the sheet-over-map one.
 
-## Design tokens
+### Shuttle data
+
+- `server/src/db/seed.js` seeds 5 **real, confirmed** stops (WTC, Al Wahda, Mamsha, Galleria Mall,
+  Louvre) at real coordinates, alongside the older placeholder stops (Saadiyat/Downtown/Yas — still
+  referenced by the placeholder restaurants, not yet replaced; see "Known gaps" / task tracking for
+  the pending real-restaurant-data rebuild).
+- Each real stop's route is a **straight line from NYUAD campus to that stop** — not the actual road
+  the shuttle drives. This was an explicit simplification (no real route waypoint/GPS data available)
+  rather than a bug; if real route data shows up later, replace the `path` in `shuttle_routes` rather
+  than adding a parallel system.
+- `MapScreen.tsx` renders routes as dashed `Polyline`s and stops as a distinct marker
+  (`shuttleStopIcon.ts`, white circle + bus glyph) behind a checkbox toggle, bottom-left. Restaurant
+  pins (`restaurantMarkerIcon.ts`) render after them so they sit visually on top.
+- **Gotcha that already happened once**: a long `TileLayer` `attribution` string wraps onto 2+ lines
+  on a phone-width viewport, and Leaflet's attribution control (`z-index: 1000` by default) then
+  physically overlaps and intercepts clicks on anything positioned near the bottom of the map (caught
+  by a Playwright test failing with "`.leaflet-control-attribution` intercepts pointer events", not by
+  eyeballing a screenshot). Keep the Esri attribution short (`"Tiles © Esri"`, the minimum Esri
+  requires) and give any bottom-positioned overlay control a `z-index` above 1000 as a second line of
+  defense.
 
 Single source of truth: `client/src/styles/tokens.css`. CSS custom properties switch automatically
 on `prefers-color-scheme` — there is no manual theme toggle. If one gets added later, it should still

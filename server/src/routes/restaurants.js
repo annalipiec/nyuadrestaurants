@@ -93,8 +93,18 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', requireAuth, requireVerified, (req, res) => {
-  const { name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info } =
-    req.body || {};
+  const {
+    name,
+    cuisine,
+    neighborhood,
+    address,
+    lat,
+    lng,
+    avg_meal_price_aed,
+    description,
+    happy_hour_info,
+    getting_there_note,
+  } = req.body || {};
 
   if (!name || !cuisine || lat == null || lng == null || avg_meal_price_aed == null) {
     return res
@@ -108,8 +118,8 @@ router.post('/', requireAuth, requireVerified, (req, res) => {
   const info = db
     .prepare(
       `INSERT INTO restaurants
-        (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, nearest_shuttle_stop_id, submitted_by, verified)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
+        (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, getting_there_note, nearest_shuttle_stop_id, submitted_by, verified)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
     )
     .run(
       name,
@@ -121,6 +131,7 @@ router.post('/', requireAuth, requireVerified, (req, res) => {
       Number(avg_meal_price_aed),
       description || null,
       happy_hour_info || null,
+      getting_there_note || null,
       closest?.id || null,
       req.user.id
     );

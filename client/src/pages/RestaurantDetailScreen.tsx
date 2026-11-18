@@ -235,8 +235,8 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
             <span className="getting-there-card__text">
               <p className="getting-there-card__label">Getting there</p>
               <p className="getting-there-card__value">
-                {Math.round(restaurant.nearest_shuttle_stop.distance_m)}m from{' '}
-                {restaurant.nearest_shuttle_stop.name}
+                {restaurant.getting_there_note ||
+                  `${Math.round(restaurant.nearest_shuttle_stop.distance_m)}m from ${restaurant.nearest_shuttle_stop.name}`}
               </p>
             </span>
             <span className="getting-there-card__chevron">

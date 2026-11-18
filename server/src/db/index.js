@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- getting_there_note: a free-text transport description (e.g. "WTC stop + 10 min walk"),
+-- preferred over computing distance from nearest_shuttle_stop_id when present, since a
+-- real walking/taxi time from a human beats a straight-line haversine estimate.
 CREATE TABLE IF NOT EXISTS restaurants (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
@@ -35,6 +38,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
   avg_meal_price_aed REAL NOT NULL,
   description TEXT,
   happy_hour_info TEXT,
+  getting_there_note TEXT,
   nearest_shuttle_stop_id INTEGER,
   submitted_by INTEGER,
   verified INTEGER NOT NULL DEFAULT 0,
@@ -101,6 +105,12 @@ if (!userColumns.includes('email_verified')) {
     ALTER TABLE users ADD COLUMN verification_code TEXT;
     ALTER TABLE users ADD COLUMN verification_expires_at TEXT;
   `);
+}
+
+// Migration for databases created before getting_there_note was added.
+const restaurantColumns = db.prepare('PRAGMA table_info(restaurants)').all().map((c) => c.name);
+if (!restaurantColumns.includes('getting_there_note')) {
+  db.exec(`ALTER TABLE restaurants ADD COLUMN getting_there_note TEXT;`);
 }
 
 export default db;

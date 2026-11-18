@@ -55,6 +55,29 @@ const stops = {
   yas: insertStop.run('Yas Mall Stop', 24.4913, 54.6069, yasRouteId).lastInsertRowid,
 };
 
+// Real NYUAD shuttle stops, confirmed by the team (coordinates given directly, not
+// approximated). One straight-line route per stop from campus — a simple, honest
+// starting point rather than pretending to trace the actual road the shuttle drives,
+// since we don't have real waypoint/GPS data for the roads themselves yet.
+const NYUAD_CAMPUS = [24.5335, 54.438];
+const REAL_STOPS = [
+  { key: 'wtc', name: 'WTC stop', lat: 24.488711817967236, lng: 54.356473283742844 },
+  { key: 'alWahda', name: 'Al Wahda stop', lat: 24.471688247027856, lng: 54.37297630832414 },
+  { key: 'mamsha', name: 'Mamsha stop', lat: 24.538358148499473, lng: 54.41029684004894 },
+  { key: 'galleria', name: 'Galleria Mall stop', lat: 24.501385508814867, lng: 54.38982096701346 },
+  { key: 'louvre', name: 'Louvre stop', lat: 24.532504123520646, lng: 54.401687247219705 },
+];
+
+const realStops = {};
+for (const stop of REAL_STOPS) {
+  const routeId = insertRoute.run(
+    `Campus ↔ ${stop.name} (straight-line, confirm real route later)`,
+    '#57068C',
+    JSON.stringify([NYUAD_CAMPUS, [stop.lat, stop.lng]])
+  ).lastInsertRowid;
+  realStops[stop.key] = insertStop.run(stop.name, stop.lat, stop.lng, routeId).lastInsertRowid;
+}
+
 const insertRestaurant = db.prepare(`
   INSERT INTO restaurants
     (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, nearest_shuttle_stop_id, submitted_by, verified)
