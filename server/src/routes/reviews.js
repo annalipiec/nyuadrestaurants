@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import db from '../db/index.js';
 import { requireAuth, requireVerified } from '../middleware/auth.js';
-import { NYUAD_PHRASES } from '../constants.js';
+import { NYUAD_PHRASES, NYUAD_PHRASE_GROUPS } from '../constants.js';
 
 const router = Router();
 
 router.get('/phrases', async (_req, res) => {
-  res.json({ phrases: NYUAD_PHRASES });
+  res.json({ phrases: NYUAD_PHRASES, groups: NYUAD_PHRASE_GROUPS });
 });
 
 router.post('/restaurants/:restaurantId/reviews', requireAuth, requireVerified, async (req, res) => {
@@ -17,6 +17,9 @@ router.post('/restaurants/:restaurantId/reviews', requireAuth, requireVerified, 
   if (!restaurant) return res.status(404).json({ error: 'Restaurant not found.' });
 
   const { stars, nyuad_phrase, text } = req.body || {};
+  if (nyuad_phrase && !NYUAD_PHRASES.includes(nyuad_phrase)) {
+    return res.status(400).json({ error: 'Pick a vibe tag from the list.' });
+  }
   const starsNum = Number(stars);
   if (!Number.isInteger(starsNum) || starsNum < 1 || starsNum > 5) {
     return res.status(400).json({ error: 'stars must be an integer between 1 and 5.' });

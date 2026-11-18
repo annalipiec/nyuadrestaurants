@@ -50,6 +50,9 @@ server/   Express + SQLite API from an earlier iteration of this project
   reject deletes, and only pending rows can be deleted). Admins' own submissions go live immediately.
   Server validation: Abu Dhabi bounding box, price 1–1000, case-insensitive duplicate names → 409,
   max 5 pending per student.
+- Tip "vibe tags": `NYUAD_PHRASE_GROUPS` in `server/src/constants.js` (26 tags in 5 groups; `GET /api/phrases`
+  returns `groups` + flat `phrases`), rendered as `<optgroup>`s in the tip form. The server rejects tags
+  not in the list — keep the original 8 strings verbatim so older tips still match.
 - **Known gap**: liking a dish calls `POST /api/dishes/:id/like`, but `GET /api/restaurants/:id`
   doesn't return whether *this* user already liked each dish — so the heart always starts unfilled
   client-side, even if you'd liked it in a previous session. Fix requires a server change (join against
@@ -244,7 +247,9 @@ than hardcoding `44px` in component styles.
 - The root `package.json` exists only to mark `api/index.js` as ESM and pin Node; it has no deps.
 - Vercel env vars required: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `JWT_SECRET`, `SMTP_USER`,
   `SMTP_PASS` (Gmail address + Google app password; see `server/src/utils/email.js`), and
-  `ADMIN_EMAILS` (who can approve restaurant suggestions; without it nobody can). Without the Turso
+  `ADMIN_EMAILS` (who can approve restaurant suggestions; without it nobody can). Currently
+  `aml9368@nyu.edu,adbites2026@gmail.com` — the Gmail one can't log in (signup is @nyu.edu only), it just
+  receives the new-suggestion emails. Without the Turso
   vars the function would try to write a local SQLite file, which doesn't persist on Vercel.
 - A brand-new Turso DB auto-seeds on the first API request (see `ready()` above).
 - Live: https://ad-bites.vercel.app — Vercel project `ad-bites` (team `anna-d6f0`). The Turso DB

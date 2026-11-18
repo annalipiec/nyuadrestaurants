@@ -52,9 +52,12 @@ export async function addReview(
   return data.review
 }
 
+export type PhraseGroup = { label: string; phrases: string[] }
+
+/** Vibe tags for tips, grouped for the picker (server/src/constants.js). */
 export async function listPhrases() {
-  const { data } = await api.get<{ phrases: string[] }>('/phrases')
-  return data.phrases
+  const { data } = await api.get<{ phrases: string[]; groups?: PhraseGroup[] }>('/phrases')
+  return data.groups ?? [{ label: 'Vibe tags', phrases: data.phrases }]
 }
 
 export type RestaurantSuggestion = {

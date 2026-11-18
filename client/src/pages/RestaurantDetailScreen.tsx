@@ -10,7 +10,7 @@ import {
   HeartIcon,
   ShareIcon,
 } from '../components/icons'
-import { addDish, addReview, getRestaurant, likeDish, listPhrases } from '../api/restaurants'
+import { addDish, addReview, getRestaurant, likeDish, listPhrases, type PhraseGroup } from '../api/restaurants'
 import { apiErrorMessage } from '../api/client'
 import { getShuttles } from '../api/shuttles'
 import type { ShuttleRoute } from '../api/types'
@@ -132,7 +132,7 @@ function AddTipForm({
   restaurantId: number
   onAdded: (review: Review) => void
 }) {
-  const [phrases, setPhrases] = useState<string[]>([])
+  const [phraseGroups, setPhraseGroups] = useState<PhraseGroup[]>([])
   const [stars, setStars] = useState(5)
   const [phrase, setPhrase] = useState('')
   const [text, setText] = useState('')
@@ -140,7 +140,7 @@ function AddTipForm({
   const [error, setError] = useState('')
 
   useEffect(() => {
-    listPhrases().then(setPhrases).catch(() => setPhrases([]))
+    listPhrases().then(setPhraseGroups).catch(() => setPhraseGroups([]))
   }, [])
 
   async function submit(e: FormEvent) {
@@ -185,10 +185,14 @@ function AddTipForm({
         onChange={(e) => setPhrase(e.target.value)}
       >
         <option value="">No vibe tag</option>
-        {phrases.map((p) => (
-          <option key={p} value={p}>
-            {p}
-          </option>
+        {phraseGroups.map((g) => (
+          <optgroup key={g.label} label={g.label}>
+            {g.phrases.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
       <textarea
