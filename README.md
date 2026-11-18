@@ -77,7 +77,7 @@ at `/api`). The database is hosted on Turso, since Vercel functions can't keep a
    - `JWT_SECRET`: any long random string (e.g. `openssl rand -hex 32`)
    - `SMTP_USER` / `SMTP_PASS`: the Gmail address that sends verification codes, and a Google
      [app password](https://myaccount.google.com/apppasswords) for it (needs 2-Step Verification on)
-4. Deploy. The first API request creates the tables and loads the demo restaurants automatically.
+4. Deploy. The first API request creates the tables and loads the seed restaurants automatically.
 
 ## Feature tour
 
@@ -91,17 +91,18 @@ at `/api`). The database is hosted on Turso, since Vercel functions can't keep a
   review. Unverified accounts can browse and like dishes, but get a "verify your email" prompt in
   place of the review form until they do.
 
-Not built yet: submitting a new restaurant, a "Saved"/"Profile" screen or bottom nav (a design mockup
-exists for this — see `restaurant-detail.png` — but it isn't wired up), and the shuttle-route overlay
-on the map (the old prototype had one; the current map shows restaurant pins only).
+Not built yet: submitting a new restaurant has an API but no client screen (see "What's stubbed out"
+below).
 
-## Important: about the seed data
+## About the seed data
 
-The 14 restaurants, prices, dishes, and shuttle stop/route coordinates in `server/src/db/seed.js` are
-**illustrative demo data**, written to show the app working end-to-end — not a verified list from you
-and your friends. Before treating this as a real launch, replace it with your own firsthand knowledge
-(the whole point of the app!) and the actual current NYUAD shuttle schedule/GPS stops from Campus
-Life — these change by semester and the seeded ones are approximate placeholders.
+`server/src/db/seed.js` seeds the team's own real, first-hand restaurant list (10 restaurants with
+real coordinates, average price per person, and a human-written "getting there" note), plus 5 real,
+confirmed NYUAD shuttle stops (WTC, Al Wahda, Mamsha, Galleria Mall, Louvre). Each stop's route is a
+straight line from campus, not the actual road the shuttle drives — there's no real route/GPS data for
+that yet. Fields the team didn't supply (description, must-try dishes, neighborhood/address) are left
+null/empty rather than invented; that's what "Add a restaurant"/dish/review in the app is for once
+students start using it. The shuttle schedule/stops change by semester — update `seed.js` when they do.
 
 ## What's stubbed out / next steps
 

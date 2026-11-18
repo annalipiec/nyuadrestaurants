@@ -255,6 +255,17 @@
   gap: 0.75rem;
 }
 
+/* An empty-state message dropped into a 2-column dish-grid/tip-grid as its only child
+   would otherwise sit in just the first column (off-center) and inherit the full-page
+   loading/not-found padding from .detail-screen__state. */
+.dish-grid__empty-note {
+  grid-column: 1 / -1;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
 .dish-card {
   display: flex;
   align-items: flex-start;

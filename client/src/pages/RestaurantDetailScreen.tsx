@@ -275,7 +275,7 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
                 </button>
               </article>
             ))}
-            {dishes.length === 0 && <p className="detail-screen__state">No dishes added yet.</p>}
+            {dishes.length === 0 && <p className="dish-grid__empty-note">No dishes added yet.</p>}
           </div>
         </section>
 
@@ -322,7 +322,7 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
                 </span>
               </article>
             ))}
-            {reviews.length === 0 && <p className="detail-screen__state">No tips yet — be the first!</p>}
+            {reviews.length === 0 && <p className="dish-grid__empty-note">No tips yet — be the first!</p>}
           </div>
         </section>
       </div>

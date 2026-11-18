@@ -104,9 +104,13 @@ nav), dimmed backdrop behind, the tab still fully mounted and interactive-state-
 ### Shuttle data
 
 - `server/src/db/seed.js` seeds 5 **real, confirmed** stops (WTC, Al Wahda, Mamsha, Galleria Mall,
-  Louvre) at real coordinates, alongside the older placeholder stops (Saadiyat/Downtown/Yas — still
-  referenced by the placeholder restaurants, not yet replaced; see "Known gaps" / task tracking for
-  the pending real-restaurant-data rebuild).
+  Louvre) at real coordinates. There are no placeholder stops/restaurants left — the seed data is the
+  team's real 10-restaurant list (name, cuisine, exact lat/lng, real avg price per person, and a
+  human-written `getting_there_note` like "WTC stop + 10 min walk"). Fields the team didn't supply
+  (description, must-try dishes, neighborhood/address) are left null/empty rather than invented —
+  that's what "Add a restaurant"/dish/review in the app is for once students start using it. Galleria
+  Mall and Louvre stops are seeded but currently unused by any restaurant (none of the 10 are near
+  them yet) — that's expected, not a bug.
 - Each real stop's route is a **straight line from NYUAD campus to that stop** — not the actual road
   the shuttle drives. This was an explicit simplification (no real route waypoint/GPS data available)
   rather than a bug; if real route data shows up later, replace the `path` in `shuttle_routes` rather
