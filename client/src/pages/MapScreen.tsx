@@ -4,7 +4,7 @@ import { MapContainer, Marker, Polyline, Popup, TileLayer } from 'react-leaflet'
 import './MapScreen.css'
 import { listRestaurants } from '../api/restaurants'
 import { getShuttles } from '../api/shuttles'
-import type { RawShuttleStop, Restaurant, ShuttleRoute } from '../api/types'
+import type { RawShuttleStop, Restaurant, ShuttleRoute, ShuttleSchedule } from '../api/types'
 import { stopSummary } from '../utils/shuttleTimes'
 import { restaurantMarkerIcon } from '../components/restaurantMarkerIcon'
 import { shuttleStopIcon } from '../components/shuttleStopIcon'
@@ -17,13 +17,15 @@ export default function MapScreen() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [routes, setRoutes] = useState<ShuttleRoute[]>([])
   const [stops, setStops] = useState<RawShuttleStop[]>([])
+  const [campus, setCampus] = useState<ShuttleSchedule['campus'] | null>(null)
   const [showShuttles, setShowShuttles] = useState(true)
 
   useEffect(() => {
     listRestaurants().then(setRestaurants)
-    getShuttles().then(({ routes, stops }) => {
+    getShuttles().then(({ routes, stops, campus }) => {
       setRoutes(routes)
       setStops(stops)
+      setCampus(campus)
     })
   }, [])
 
@@ -51,9 +53,27 @@ export default function MapScreen() {
               <Polyline
                 key={route.key}
                 positions={route.path}
-                pathOptions={{ color: route.color, weight: 4, opacity: 0.75, dashArray: '1 8' }}
+                pathOptions={
+                  route.follows_roads
+                    ? { color: route.color, weight: 4, opacity: 0.7 }
+                    : { color: route.color, weight: 4, opacity: 0.75, dashArray: '1 8' }
+                }
               />
             ))}
+
+        {showShuttles && campus && (
+          <Marker position={[campus.lat, campus.lng]} icon={shuttleStopIcon()}>
+            <Popup>
+              <div className="map-popup">
+                <p className="map-popup__name">{campus.label}</p>
+                <p className="map-popup__meta">Every shuttle leaves from and returns here.</p>
+                <Link to="/shuttles" className="map-popup__link">
+                  Full timetable
+                </Link>
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {showShuttles &&
           stops.map((stop) => (

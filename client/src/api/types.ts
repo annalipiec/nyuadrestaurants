@@ -81,7 +81,10 @@ export type ShuttleRoute = {
   service: string
   stops: ShuttleRouteStop[]
   trips: (string | null)[][]
+  /** Line to draw on the map; [] if none of the route's stops are mapped yet. */
   path: [number, number][]
+  /** true = path follows real roads; false = straight lines between stops (fallback). */
+  follows_roads: boolean
 }
 
 export type RawShuttleStop = {
@@ -93,6 +96,8 @@ export type RawShuttleStop = {
 
 export type ShuttleSchedule = {
   info: { effective: string; notice: string; advisory: string; seating: string }
+  /** Where every shuttle leaves from and returns to. */
+  campus: { label: string; lat: number; lng: number }
   stops: RawShuttleStop[]
   routes: ShuttleRoute[]
   other_services: { name: string; when: string; destination: string; returns: string }[]

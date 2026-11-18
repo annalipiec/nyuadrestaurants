@@ -10,7 +10,8 @@
 // i.e. 2 × (stops.length − 1) values. `null` = "–" in the printed table (the bus doesn't
 // serve that stop on that trip). Times are Abu Dhabi local time, written as printed.
 
-export const NYUAD_CAMPUS = { lat: 24.5335, lng: 54.438 };
+// Where every shuttle leaves from and returns to on campus (confirmed by the team).
+export const NYUAD_CAMPUS = { lat: 24.523602864193023, lng: 54.433892386023516 };
 
 // Stops with confirmed coordinates (given directly by the team). `key` links timetable stops,
 // restaurants (seed.js) and map pins together; `name` is what the DB row is called.
@@ -120,6 +121,16 @@ export const OTHER_SERVICES = [
   { name: 'Religious transportation', when: 'Friday, 12:00 PM – 12:10 PM', destination: 'Saadiyat Mosque', returns: '1:15 PM' },
   { name: 'Religious transportation', when: 'Sunday, 9:15 AM', destination: 'St. Andrew / ECC', returns: '11:45 AM' },
 ];
+
+// A route's map waypoints: campus + every stop with known coordinates, in order. Used by the
+// API (straight-line fallback) and scripts/build-shuttle-paths.mjs (road paths).
+export function routeWaypoints(route) {
+  return route.stops.flatMap(({ stop }) => {
+    if (stop === 'campus') return [[NYUAD_CAMPUS.lat, NYUAD_CAMPUS.lng]];
+    const real = REAL_STOPS.find((s) => s.key === stop);
+    return real ? [[real.lat, real.lng]] : [];
+  });
+}
 
 // Sanity check at import time so a typo in a new schedule fails loudly instead of silently
 // mis-aligning times with stops.
