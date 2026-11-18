@@ -150,54 +150,131 @@ return [
 
 }
 
+// This file's current seed/service account.
+const CURRENT_SEED_USER_EMAIL = 'ad-bites-team@nyu.edu';
+
+// Emails an OLDER version of this file used for its seed account — never the current
+// one. resyncSeedRestaurants() deletes restaurants attributed to these (cascading to
+// their dishes/reviews), but must never touch CURRENT_SEED_USER_EMAIL's restaurants:
+// those are the real, current data, and a real user may have liked/reviewed one since
+// it was inserted.
+const OLD_SEED_USER_EMAILS = ['eats-team@nyu.edu'];
+
+// Names of the placeholder stops/routes a pre-real-data version of this file seeded.
+// resyncSeedRestaurants() deletes these by exact name so a database seeded with them
+// (e.g. the production Turso DB, seeded before this file had real data) gets cleaned up.
+const OLD_PLACEHOLDER_STOP_NAMES = [
+  'NYUAD Campus – Bus Loop', 'Saadiyat Beach District', 'Al Reem Island Stop',
+  'Hamdan Street Stop', 'Downtown / Electra Street Stop', 'Yas Mall Stop',
+];
+const OLD_PLACEHOLDER_ROUTE_NAMES = [
+  'Saadiyat ↔ Downtown Loop (example)', 'Saadiyat ↔ Yas Island (example)',
+];
+
+async function ensureSeedUser(tx) {
+  const email = CURRENT_SEED_USER_EMAIL;
+  const existing = await tx.get('SELECT id FROM users WHERE email = ?', email);
+  if (existing) return existing.id;
+  const passwordHash = bcrypt.hashSync('ad-bites-demo', 10);
+  return (
+    await tx.run(
+      `INSERT INTO users (email, name, password_hash, class_year, email_verified) VALUES (?, ?, ?, ?, 1)`,
+      email,
+      'AD Bites Team',
+      passwordHash,
+      2026
+    )
+  ).lastInsertRowid;
+}
+
+// Inserts the real shuttle stops/routes, skipping any that already exist by name —
+// safe to call against a database that already has some or all of them.
+async function ensureRealStops(tx) {
+  const insertRoute = async (name, color, path) =>
+    (await tx.run(`INSERT INTO shuttle_routes (name, color, path_json) VALUES (?, ?, ?)`, name, color, JSON.stringify(path)))
+      .lastInsertRowid;
+  const insertStop = async (name, lat, lng, routeId) =>
+    (await tx.run(`INSERT INTO shuttle_stops (name, lat, lng, route_id) VALUES (?, ?, ?, ?)`, name, lat, lng, routeId))
+      .lastInsertRowid;
+
+  const realStops = {};
+  for (const stop of REAL_STOPS) {
+    const existing = await tx.get('SELECT id FROM shuttle_stops WHERE name = ?', stop.name);
+    if (existing) {
+      realStops[stop.key] = existing.id;
+      continue;
+    }
+    const routeId = await insertRoute(
+      `Campus ↔ ${stop.name} (straight-line, confirm real route later)`,
+      '#57068C',
+      [NYUAD_CAMPUS, [stop.lat, stop.lng]]
+    );
+    realStops[stop.key] = await insertStop(stop.name, stop.lat, stop.lng, routeId);
+  }
+  return realStops;
+}
+
+// Inserts the real restaurants, skipping any that already exist by name — returns how
+// many were actually inserted.
+async function insertRestaurantsIfMissing(tx, realStops, seedUserId) {
+  let inserted = 0;
+  for (const r of buildRestaurants(realStops)) {
+    const existing = await tx.get('SELECT id FROM restaurants WHERE name = ?', r.name);
+    if (existing) continue;
+    await tx.run(
+      `INSERT INTO restaurants
+        (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, getting_there_note, nearest_shuttle_stop_id, submitted_by, verified)
+       VALUES (@name, @cuisine, @neighborhood, @address, @lat, @lng, @avg_meal_price_aed, @description, @happy_hour_info, @getting_there_note, @nearest_shuttle_stop_id, @submitted_by, 1)`,
+      { ...r, submitted_by: seedUserId }
+    );
+    inserted += 1;
+  }
+  return inserted;
+}
+
 // Returns true if it seeded, false if the database already had restaurants.
 export async function seedIfEmpty() {
   return db.transaction(async (tx) => {
     const already = (await tx.get('SELECT COUNT(*) AS c FROM restaurants')).c;
     if (already > 0) return false;
 
-    const demoPasswordHash = bcrypt.hashSync('ad-bites-demo', 10);
-    const existingSeedUser = await tx.get('SELECT id FROM users WHERE email = ?', 'ad-bites-team@nyu.edu');
-    const seedUserId =
-      existingSeedUser?.id ??
-      (
-        await tx.run(
-          `INSERT INTO users (email, name, password_hash, class_year, email_verified) VALUES (?, ?, ?, ?, 1)`,
-          'ad-bites-team@nyu.edu',
-          'AD Bites Team',
-          demoPasswordHash,
-          2026
-        )
-      ).lastInsertRowid;
+    const seedUserId = await ensureSeedUser(tx);
+    const realStops = await ensureRealStops(tx);
+    const inserted = await insertRestaurantsIfMissing(tx, realStops, seedUserId);
 
-    const insertRoute = async (name, color, path) =>
-      (await tx.run(`INSERT INTO shuttle_routes (name, color, path_json) VALUES (?, ?, ?)`, name, color, JSON.stringify(path)))
-        .lastInsertRowid;
-    const insertStop = async (name, lat, lng, routeId) =>
-      (await tx.run(`INSERT INTO shuttle_stops (name, lat, lng, route_id) VALUES (?, ?, ?, ?)`, name, lat, lng, routeId))
-        .lastInsertRowid;
+    console.log(`Seeded ${inserted} restaurants and shuttle stops.`);
+    return true;
+  });
+}
 
-    const realStops = {};
-    for (const stop of REAL_STOPS) {
-      const routeId = await insertRoute(
-        `Campus ↔ ${stop.name} (straight-line, confirm real route later)`,
-        '#57068C',
-        [NYUAD_CAMPUS, [stop.lat, stop.lng]]
-      );
-      realStops[stop.key] = await insertStop(stop.name, stop.lat, stop.lng, routeId);
+// One-off ops helper for a database that was already seeded before this file had the
+// team's real restaurant data (this happened to the production Turso DB: it got the old
+// placeholder restaurants seeded early on, and seedIfEmpty() only runs on an empty
+// table, so it never got the real data). Deletes only rows this file is responsible for
+// — restaurants submitted by an OLD seed account (never the current one — see
+// OLD_SEED_USER_EMAILS), and the old placeholder stops/routes by exact name — never a
+// real user's restaurant, dish, or review, and never the current real restaurants (or
+// any dish/review a real user has added to one). Safe to re-run: stops/restaurants are
+// inserted only if missing by name, and nothing belonging to the current seed account
+// is ever deleted. Not run automatically — see `npm run resync` in server/.
+export async function resyncSeedRestaurants() {
+  return db.transaction(async (tx) => {
+    for (const email of OLD_SEED_USER_EMAILS) {
+      const user = await tx.get('SELECT id FROM users WHERE email = ?', email);
+      if (user) await tx.run('DELETE FROM restaurants WHERE submitted_by = ?', user.id);
+    }
+    for (const name of OLD_PLACEHOLDER_STOP_NAMES) {
+      await tx.run('DELETE FROM shuttle_stops WHERE name = ?', name);
+    }
+    for (const name of OLD_PLACEHOLDER_ROUTE_NAMES) {
+      await tx.run('DELETE FROM shuttle_routes WHERE name = ?', name);
     }
 
-    const restaurants = buildRestaurants(realStops);
-    for (const r of restaurants) {
-      await tx.run(
-        `INSERT INTO restaurants
-          (name, cuisine, neighborhood, address, lat, lng, avg_meal_price_aed, description, happy_hour_info, getting_there_note, nearest_shuttle_stop_id, submitted_by, verified)
-         VALUES (@name, @cuisine, @neighborhood, @address, @lat, @lng, @avg_meal_price_aed, @description, @happy_hour_info, @getting_there_note, @nearest_shuttle_stop_id, @submitted_by, 1)`,
-        { ...r, submitted_by: seedUserId }
-      );
-    }
+    const seedUserId = await ensureSeedUser(tx);
+    const realStops = await ensureRealStops(tx);
+    const inserted = await insertRestaurantsIfMissing(tx, realStops, seedUserId);
 
-    console.log(`Seeded ${restaurants.length} restaurants and shuttle stops.`);
+    console.log(`Resync done: removed old placeholder data, inserted ${inserted} missing real restaurant(s).`);
     return true;
   });
 }
