@@ -38,6 +38,9 @@ server/   Express + SQLite API from an earlier iteration of this project
   verification. Codes are emailed via Gmail SMTP (`server/src/utils/email.js`); only in local dev
   with no `SMTP_USER`/`SMTP_PASS` does the API return `dev_verification_code`, which
   `VerifyEmailScreen` then shows on screen. 5 wrong tries cancel a code; resend has a 60s cooldown.
+- Dishes: "Add a dish" on the restaurant detail screen (`AddDishForm`, same login + verified-email
+  gate as tips) → `POST /api/restaurants/:id/dishes`. Server trims/collapses the name (≤80 chars),
+  price optional 0–1000 AED, and rejects case-insensitive duplicates per restaurant with 409.
 - **Known gap**: liking a dish calls `POST /api/dishes/:id/like`, but `GET /api/restaurants/:id`
   doesn't return whether *this* user already liked each dish — so the heart always starts unfilled
   client-side, even if you'd liked it in a previous session. Fix requires a server change (join against

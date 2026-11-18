@@ -10,7 +10,7 @@ import {
   HeartIcon,
   ShareIcon,
 } from '../components/icons'
-import { addReview, getRestaurant, likeDish, listPhrases } from '../api/restaurants'
+import { addDish, addReview, getRestaurant, likeDish, listPhrases } from '../api/restaurants'
 import { apiErrorMessage } from '../api/client'
 import { getShuttles } from '../api/shuttles'
 import type { ShuttleRoute } from '../api/types'
@@ -73,6 +73,57 @@ function ShuttleTimes({ stopId }: { stopId: number }) {
 }
 
 type DishWithLikeState = Dish & { liked: boolean }
+
+function AddDishForm({ restaurantId, onAdded }: { restaurantId: number; onAdded: (dish: Dish) => void }) {
+  const [name, setName] = useState('')
+  const [price, setPrice] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      const dish = await addDish(restaurantId, name.trim(), price.trim() ? Number(price) : null)
+      onAdded(dish)
+      setName('')
+      setPrice('')
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Could not add that dish.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className="add-tip-form" onSubmit={submit}>
+      <input
+        className="add-tip-form__select"
+        required
+        maxLength={80}
+        placeholder="Dish name, e.g. Chicken Mandi"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        className="add-tip-form__select"
+        type="number"
+        inputMode="decimal"
+        min={0}
+        max={1000}
+        step="0.5"
+        placeholder="Price in AED (optional)"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+      />
+      {error && <p className="add-tip-form__error">{error}</p>}
+      <button type="submit" className="add-tip-form__submit" disabled={busy || !name.trim()}>
+        Add dish
+      </button>
+    </form>
+  )
+}
 
 function AddTipForm({
   restaurantId,
@@ -166,6 +217,7 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [showTipForm, setShowTipForm] = useState(false)
+  const [showDishForm, setShowDishForm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -302,7 +354,35 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
         <section className="detail-screen__section">
           <div className="detail-screen__section-header">
             <h2 className="detail-screen__section-title">Must-try dishes</h2>
+            {!showDishForm && (
+              <button type="button" className="detail-screen__link-button" onClick={() => setShowDishForm(true)}>
+                Add a dish
+              </button>
+            )}
           </div>
+
+          {showDishForm &&
+            (!user ? (
+              <p className="detail-screen__prompt">
+                <Link to="/login" className="detail-screen__prompt-link">
+                  Log in
+                </Link>{' '}
+                to add a dish.
+              </p>
+            ) : !user.email_verified ? (
+              <p className="detail-screen__prompt">
+                <Link to="/verify-email" className="detail-screen__prompt-link">
+                  Verify your email
+                </Link>{' '}
+                to add a dish.
+              </p>
+            ) : (
+              <AddDishForm
+                restaurantId={restaurant.id}
+                onAdded={(dish) => setDishes((current) => [...current, { ...dish, liked: false }])}
+              />
+            ))}
+
           <div className="dish-grid">
             {dishes.map((dish) => (
               <article key={dish.id} className="dish-card">
@@ -322,7 +402,9 @@ export default function RestaurantDetailScreen({ embedded = false }: { embedded?
                 </button>
               </article>
             ))}
-            {dishes.length === 0 && <p className="dish-grid__empty-note">No dishes added yet.</p>}
+            {dishes.length === 0 && !showDishForm && (
+              <p className="dish-grid__empty-note">No dishes added yet. Know a must-try? Add it!</p>
+            )}
           </div>
         </section>
 
