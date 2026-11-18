@@ -10,7 +10,8 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<User>
   logout: () => void
   verifyEmail: (code: string) => Promise<User>
-  resendVerification: () => Promise<string>
+  /** Resolves to the code only in local dev without email; otherwise it was emailed. */
+  resendVerification: () => Promise<string | undefined>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)

@@ -21,8 +21,8 @@ export function requireAuth(req, res, next) {
   }
 }
 
-export function requireVerified(req, res, next) {
-  const user = db.prepare('SELECT email_verified FROM users WHERE id = ?').get(req.user.id);
+export async function requireVerified(req, res, next) {
+  const user = await db.get('SELECT email_verified FROM users WHERE id = ?', req.user.id);
   if (!user) return res.status(401).json({ error: 'Sign in required.' });
   if (!user.email_verified) {
     return res.status(403).json({

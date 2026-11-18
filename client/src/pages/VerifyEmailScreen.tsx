@@ -9,10 +9,13 @@ export default function VerifyEmailScreen() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const initialCode = (location.state as { devCode?: string } | null)?.devCode || ''
+  const navState = location.state as { devCode?: string; emailFailed?: boolean } | null
+  const initialCode = navState?.devCode || ''
   const [code, setCode] = useState(initialCode)
   const [devCode, setDevCode] = useState<string | null>(initialCode || null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(
+    navState?.emailFailed ? "We couldn't send your code. Tap “Send a new code” below to try again." : ''
+  )
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -41,9 +44,14 @@ export default function VerifyEmailScreen() {
     setInfo('')
     try {
       const newCode = await resendVerification()
-      setDevCode(newCode)
-      setCode(newCode)
-      setInfo('A new code has been issued.')
+      if (newCode) {
+        setDevCode(newCode)
+        setCode(newCode)
+        setInfo('A new code has been issued.')
+      } else {
+        setCode('')
+        setInfo(`We sent a new code to ${user!.email}. Check your spam folder if it isn't there.`)
+      }
     } catch (err) {
       setError(apiErrorMessage(err, 'Could not resend a code.'))
     } finally {
@@ -59,10 +67,12 @@ export default function VerifyEmailScreen() {
         restaurants.
       </p>
 
-      <p className="auth-screen__dev-note">
-        Dev mode: no email provider is configured yet, so your code is shown here instead of emailed —{' '}
-        <span className="auth-screen__dev-code">{devCode || '••••••'}</span>
-      </p>
+      {devCode && (
+        <p className="auth-screen__dev-note">
+          Dev mode: no email provider is configured, so your code is shown here instead of emailed —{' '}
+          <span className="auth-screen__dev-code">{devCode}</span>
+        </p>
+      )}
 
       <form className="auth-form" onSubmit={submit}>
         <input

@@ -19,7 +19,10 @@ export default function SignupScreen() {
     setError('')
     try {
       const data = await signup({ name, email, password })
-      navigate('/verify-email', { replace: true, state: { devCode: data.dev_verification_code } })
+      navigate('/verify-email', {
+        replace: true,
+        state: { devCode: data.dev_verification_code, emailFailed: data.email_sent === false },
+      })
     } catch (err) {
       setError(apiErrorMessage(err, 'Could not create account.'))
     } finally {
